@@ -1,0 +1,1 @@
+# tfy-typescript-policy
