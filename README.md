@@ -23,6 +23,7 @@ asset bundle.js 857 bytes [compared for emit] [minimized] (name: main)
 webpack 5.36.1 compiled successfully in 229 ms
 ```
 
+# Run the policy locally
 ```Local Run
 npx ts-node local_run.ts
 ```
