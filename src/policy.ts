@@ -1,8 +1,12 @@
 import { ValidationError } from './errors';
-import { Service } from './models';
-import { ValidationContext } from './types';
+import { ValidationInput } from './types';
 
-export function validate(service: Service, context: ValidationContext): Service {
+export function validate(validationInput: ValidationInput) {
+    if (validationInput.manifest.type !== 'service') {
+        return;
+    }
+    const service = validationInput.manifest;
+
     // Check if service has image property of type Build
     if ('image' in service && service.image && 'build_source' in service.image) {
         const buildSource = service.image.build_source;
@@ -10,5 +14,4 @@ export function validate(service: Service, context: ValidationContext): Service 
             throw new ValidationError('GitHub repositories are not allowed as build sources');
         }
     }
-    return service;
 }
