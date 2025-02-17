@@ -1,7 +1,7 @@
 import { ValidationError } from './errors';
 import { ValidationInput } from './types';
 
-export function validate(validationInput: ValidationInput) {
+export function validate(validationInput: ValidationInput): void {
     if (validationInput.manifest.type !== 'service') {
         return;
     }

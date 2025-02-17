@@ -11,7 +11,6 @@ const dummyWorkspace: Workspace = {
 const dummyValidationContext: ValidationContext = {
     workspace: {
         id: '1',
-        name: 'test-workspace',
         manifest: dummyWorkspace,
         fqn: 'test-workspace'
     }
@@ -43,8 +42,13 @@ const githubService: Service = {
     ]
 };
 
+const validationInput = {
+    manifest: githubService,
+    context: dummyValidationContext
+}
+
 try {
-    const validatedService = validate(githubService, dummyValidationContext);
+    const validatedService = validate(validationInput);
     console.log(validatedService);
 } catch (error) {
     console.error(error);
