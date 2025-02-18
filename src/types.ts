@@ -27,4 +27,9 @@ export interface MutationContext {
     inputManifest: ApplicationManifest;
 }
 
-
+export class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}

@@ -1,5 +1,4 @@
-import { ValidationError } from './errors';
-import { ValidationInput } from './types';
+import { ValidationInput, ValidationError } from './types';
 
 export function validate(validationInput: ValidationInput): void {
     if (validationInput.manifest.type !== 'service') {
