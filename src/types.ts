@@ -1,18 +1,17 @@
 import { KubernetesObjectWithSpec } from "@kubernetes/client-node";
 import { AsyncService, Job, Notebook, Service, SparkJob, SSHServer, Workflow, Workspace } from "./models";
 
+export type Action = 'apply' | 'delete';
+
 export interface ValidationInput {
     manifest: ApplicationManifest;
     context: ValidationContext;
 }
 export interface ValidationContext {
-    workspace: WorkspaceEntity;
-}
-
-export interface WorkspaceEntity {
-    id: string;
-    manifest: Workspace
-    fqn: string
+    workspace_name?: string;
+    cluster_name?: string;
+    env_name?: string;
+    action: Action;
 }
 
 export type ApplicationManifest = Service | AsyncService | Workflow | Notebook | SSHServer | Workspace | Job | SparkJob;
@@ -23,8 +22,11 @@ export interface MutationInput {
 }
 
 export interface MutationContext {
-    workspace: WorkspaceEntity;
-    inputManifest: ApplicationManifest;
+  workspace_name?: string;
+  cluster_name?: string;
+  env_name?: string;
+  action: Action;
+  inputManifest: ApplicationManifest;
 }
 
 export class ValidationError extends Error {

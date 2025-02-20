@@ -9,11 +9,8 @@ const dummyWorkspace: Workspace = {
 }
 
 const dummyValidationContext: ValidationContext = {
-    workspace: {
-        id: '1',
-        manifest: dummyWorkspace,
-        fqn: 'test-workspace'
-    }
+    workspace_name: dummyWorkspace.name,
+    action: 'apply'
 }
 
 // Sample service with GitHub build source (should throw error)
