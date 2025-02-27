@@ -7,7 +7,7 @@
     "author": "TrueFoundry",
     "license": "MIT",
     "devDependencies": {
-        "@kubernetes/client-node": "^0.22.1",
+        "@kubernetes/client-node": "^1.0.0",
         "@types/js-yaml": "^4.0.9",
         "@types/request": "^2.48.12",
         "@types/ws": "^8.5.14",
