@@ -1,32 +1,34 @@
-import { KubernetesObjectWithSpec } from "@kubernetes/client-node";
-import { AsyncService, Job, Notebook, Service, SparkJob, SSHServer, Workflow, Workspace } from "./models";
-
-export type Action = 'apply' | 'delete';
+import { KubernetesObjectWithSpec } from '@kubernetes/client-node';
+import { Job, PolicyActions, PolicyEntityTypes, Service } from './models';
 
 export interface ValidationInput {
-    manifest: ApplicationManifest;
-    context: ValidationContext;
+  manifest: ApplicationManifest;
+  context: ValidationContext;
 }
 export interface ValidationContext {
-    workspace_name?: string;
-    cluster_name?: string;
-    env_name?: string;
-    action: Action;
+  entity: PolicyEntityTypes;
+  action: PolicyActions;
+  filters: Filters;
 }
 
-export type ApplicationManifest = Service | AsyncService | Workflow | Notebook | SSHServer | Workspace | Job | SparkJob;
+export type ApplicationManifest = Service | Job;
 
 export interface MutationInput {
-    outputK8sManifests: KubernetesObjectWithSpec[];
-    context: MutationContext;
+  outputK8sManifests: KubernetesObjectWithSpec[];
+  context: MutationContext;
 }
 
 export interface MutationContext {
+  entity: PolicyEntityTypes;
+  action: PolicyActions;
+  filters: Filters;
+  inputManifest: ApplicationManifest;
+}
+
+export interface Filters {
   workspace_name?: string;
   cluster_name?: string;
   env_name?: string;
-  action: Action;
-  inputManifest: ApplicationManifest;
 }
 
 export class ValidationError extends Error {

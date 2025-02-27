@@ -6,7 +6,12 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type ModelType = "completion" | "chat" | "embedding" | "rerank";
+export type ModelType =
+  | "completion"
+  | "chat"
+  | "embedding"
+  | "rerank"
+  | "realtime";
 export type AWSRegion =
   | "us-east-1"
   | "us-east-2"
@@ -36,16 +41,23 @@ export type AWSRegion =
 export type Agent = BaseArtifactVersion & {} & {
   /**
    * +value=agent
+   * +usage=Type of the entity
    */
   type?: "agent";
   /**
    * +sort=30
    * +uiType=Hidden
+   * +label=Tools
+   * +usage=Tools available to the agent
+   * +uiProps={"descriptionInline":true}
    */
   available_tools?: string[];
   /**
    * +sort=10
    * +uiType=TextArea
+   * +label=Goal
+   * +usage=Short form description. Will be used as `description` when this agent is used as a tool.
+   * +uiProps={"descriptionInline":true}
    */
   goal?: string;
   /**
@@ -53,56 +65,88 @@ export type Agent = BaseArtifactVersion & {} & {
    * +sort=20
    * +uiType=AgentInstructions
    * +uiProps={"helpText":"Use the syntax ${Tool FQN} to reference a tool, and ${AGENT FQN} to reference another agent"}
+   * +label=Instructions
+   * +usage=Instructions for the agent to follow to achieve the goal
+   * +uiProps={"descriptionInline":true}
    */
   instruction?: string;
   /**
    * +sort=40
    * +uiType=EnabledModelSelector
    * +uiProps={"searchable":true,"modelType":"chat","providerType":"openai"}
+   * +label=Model
+   * +usage=Model to use when running the agent
    */
   model_id?: string;
 };
 export type AgentOpenAPIToolWithFQN = AgentOpenAPITool & {} & {
+  /**
+   * +usage=ID of the agent tool
+   */
   id?: string;
+  /**
+   * +usage=FQN of the agent tool
+   */
   fqn?: string;
 };
 export type AgentOpenAPITool = BaseArtifactVersion & {} & {
   /**
    * +value=openapi-tool
+   * +usage=Type of the agent
    */
   type?: "openapi-tool";
   /**
    * +sort=20
    * +uiType=OpenapiSchema
+   * +label=OpenAPI Spec
+   * +usage=OpenAPI Spec for the tool describing the API, endpoints and parameters. [Sample OpenAPI Spec Link](https://assets.production.truefoundry.com/sample-openapi.json)
+   * +uiProps={"descriptionInline":true}
+   * +placeholder={"openapi":"3.0.0","info":{"title":"LLM Agent Tools API","version":"1.0.0"},"servers":[{"url":"https://api.example.com/v1"}],"paths":{"/weather":{"get":{"summary":"Get current weather","description":"Fetches the current weather for a given location.","parameters":[{"name":"location","in":"query","required":true,"schema":{"type":"string"}}],"responses":{"200":{"description":"Successful response","content":{"application/json":{"schema":{"type":"object","properties":{"location":{"type":"string"},"temperature":{"type":"number"},"condition":{"type":"string"}}}}}}}}}}}
    */
   openapi_spec?: BlobStorageReference | {};
   /**
    * +sort=30
+   * +label=Base URL
+   * +usage=HTTP endpoint where the API is hosted for the tools. E.g. `https://api.example.com/v1`
+   * +uiProps={"descriptionInline":true}
+   * +placeholder=https://api.example.com/v1
    */
   base_url?: string;
   /**
    * +sort=40
    * +uiType=MethodPathSelector
-   * +label=Method + Path
-   * +usage=Select one Method and Path for this tool
+   * +label=API Route Path
+   * +usage=API Route Path for the tool call HTTP request. E.g. `GET /weather`
+   * +uiProps={"descriptionInline":true}
    */
   path?: string;
   /**
    * +sort=50
    * +uiType=Hidden
+   * +label=API HTTP Method
+   * +usage=HTTP Method for the tool call HTTP request
    */
   method?: "get" | "post" | "put" | "delete" | "patch";
   /**
    * +sort=60
    * +uiType=KV
    * +uiProps={"allowSecrets":true,"secretConfig":{"enableNew":true,"hideOptions":true}}
+   * +label=Headers
+   * +usage=HTTP Headers for the tool call HTTP request. E.g. `Authorization: Bearer <token>`
+   * +uiProps={"descriptionInline":true}
    */
   headers?: {
     [k: string]: string;
   };
 };
 export type AgentWithFQN = Agent & {} & {
+  /**
+   * +usage=ID of the agent
+   */
   id?: string;
+  /**
+   * +usage=FQN of the agent
+   */
   fqn?: string;
 };
 /**
@@ -172,23 +216,34 @@ export type AsyncServiceAutoscaling = BaseAutoscaling & {} & {
     | CronMetric
     | AMQPMetricConfig;
 };
+/**
+ * +label=Artifact Version
+ * +usage=Log a new Artifact Version containing files and folders with metadata
+ */
 export type ArtifactVersion = BaseArtifactVersion & {} & {
   /**
    * +label=Type
    * +usage=Artifact Version
-   * +value="artifact-version"
+   * +value=artifact-version
    */
   type?: "artifact-version";
   /**
    * +label=Artifact Source
-   * +usage=Source for the Artifact version
    * +uiType=Group
    */
   source?: TrueFoundryManagedSource | ExternalBlobStorageSource;
   /**
    * +label=Step
+   * +usage=Step/Epoch number in an iterative training loop the artifact version was created. Generally useful when logging a model version from a MLRepo Run
+   * +uiProps={"descriptionInline":true}
    */
   step?: number;
+  /**
+   * +label=Run ID
+   * +usage=ID of the MLRepo Run that generated the artifact version
+   * +uiType=Hidden
+   */
+  run_id?: string;
 };
 export type AwsIntegrations =
   | AwsEcr
@@ -203,7 +258,8 @@ export type AzureIntegrations =
   | AzureBlobStorage
   | AzureOpenAIModel
   | AzureVault
-  | AzureReposIntegration;
+  | AzureReposIntegration
+  | AzureAIInferenceModel;
 /**
  * +docs=Describes the configuration for the code server
  */
@@ -265,7 +321,8 @@ export type GcpIntegrations =
   | GcpGcs
   | GcpGsm
   | GcpGkeIntegration
-  | VertexModel;
+  | VertexModel
+  | GoogleModel;
 export type Input =
   | ProviderAccounts
   | Cluster
@@ -284,14 +341,16 @@ export type Input =
   | Codeserver
   | SSHServer
   | RStudio
-  | MLRepo
   | ApplicationSet
   | Intercept
+  | MLRepo
   | ModelVersion
   | ArtifactVersion
   | DataDirectory
   | GatewayConfig
-  | Team;
+  | Team
+  | Environment
+  | Policy;
 export type ProviderAccounts =
   | AwsProviderAccount
   | AzureProviderAccount
@@ -400,22 +459,26 @@ export type RStudio = BaseWorkbenchInput & {} & {
   type?: "rstudio";
   image?: WorkbenchImage;
 };
+/**
+ * +label=Artifact Version
+ * +usage=Log a new Model Version containing model files and folders with metadata
+ */
 export type ModelVersion = BaseArtifactVersion & {} & {
   /**
    * +label=Type
    * +usage=Model Version
-   * +value="model-version"
+   * +value=model-version
    */
   type?: "model-version";
   /**
    * +label=Model Source
-   * +usage=Source for the model version
    * +uiType=Group
    */
   source?: TrueFoundryManagedSource | ExternalBlobStorageSource;
   /**
    * +label=Framework
-   * +usage=Framework for the model version
+   * +usage=Framework for the model version like Transformers, PyTorch, Sklearn, Xgboost etc with framework specific metadata. This will be used to infer model deployment configuration
+   * +uiProps={"descriptionInline":true}
    */
   framework?:
     | TransformersFramework
@@ -435,23 +498,33 @@ export type ModelVersion = BaseArtifactVersion & {} & {
   environment?: ModelVersionEnvironment;
   /**
    * +label=Step
+   * +usage=Step/Epoch number in an iterative training loop the model version was created. Generally useful when logging a model version from a MLRepo Run
+   * +uiProps={"descriptionInline":true}
    */
   step?: number;
+  /**
+   * +label=Run ID
+   * +usage=ID of the MLRepo Run that generated the model version
+   * +uiType=Hidden
+   */
+  run_id?: string;
 };
 /**
- * +label=Serialization format
- * +usage=Serialization format used for sklearn models
+ * +label=Scikit Learn Serialization Format
+ * +usage=Serialization format used to save the sklearn model
  */
 export type SklearnSerializationFormat = "cloudpickle" | "joblib" | "pickle";
 /**
  * +label=Serialization format
- * +usage=Serialization format used for XGBoost models
+ * +usage=Serialization format used to save the xgboost model
  */
 export type XGBoostSerializationFormat =
   | "cloudpickle"
   | "joblib"
   | "pickle"
   | "json";
+export type PolicyEntityTypes = "service" | "job";
+export type PolicyActions = "apply";
 
 /**
  * +label=A21 Model
@@ -654,34 +727,35 @@ export interface AWSInferentia {
 }
 export interface BaseArtifactVersion {
   /**
+   * +sort=1
+   * +label=Name
+   * +message=The name should start with lowercase alphabets  and can contain alphanumeric and can include '-' in between
+   * +usage=Name of the entity
+   */
+  name?: string;
+  /**
    * +sort=2
    * +label=Description
    */
   description?: string | null;
   /**
    * +label=Metadata
-   * +docs=Key value pairs to store additional metadata
-   * +usage=Key value pairs to store additional metadata
+   * +usage=Key value metadata. Should be valid JSON. For e.g. `{"business-unit": "sales", "quality": "good", "rating": 4.5}`
    * +uiType=JsonInput
+   * +uiProps={"descriptionInline":true}
    */
   metadata: {};
   /**
    * +label=Version Alias
-   * +usage=The version alias should start with 'v' followed by alphanumeric and it can include '.' and '-' in between (e.g. v1.0.0, v1-prod, v3-dev, etc)
-   * +docs=The version alias should start with 'v' followed by alphanumeric and it can include '.' and '-' in between (e.g. v1.0.0, v1-prod, v3-dev, etc)
-   * +message=The version alias should start with 'v' followed by alphanumeric and it can include '.' and '-' in between (e.g. v1.0.0, v1-prod, v3-dev, etc)
+   * +usage=Version alias is alternate, ideally human readable, version string to reference an artifact version. It should start with `v` followed by alphanumeric and it can include `.` and `-` in between (e.g. `v1.0.0`, `v1-prod`, `v3-dev`, etc)
+   * +message=The version alias should start with `v` followed by alphanumeric and can include `.` and `-` in between (e.g. `v1.0.0`, `v1-prod`, `v3-dev`, etc)
+   * +uiProps={"descriptionInline":true}
+   * +placeholder=v1.0.0
    */
   version_alias?: string;
   /**
-   * +sort=1
-   * +label=Name
-   * +message=The name should start with lowercase alphabets  and can contain alphanumeric and can include '-' in between
-   */
-  name?: string;
-  /**
    * +label=ML Repo
-   * +usage=name of the ML Repo
-   * +docs=name of the ML Repo
+   * +usage=Name of the ML Repo
    * +uiType=Hidden
    */
   ml_repo?: string;
@@ -695,18 +769,34 @@ export interface BaseArtifactVersion {
 export interface AgentApp {
   /**
    * +value=agent-app
+   * +usage=Type of the app
    */
   type: "agent-app";
+  /**
+   * +label=Tools
+   * +usage=Tools available to the Agent app
+   */
   tools: AgentOpenAPIToolWithFQN[];
+  /**
+   * +label=Agents
+   * +usage=Agents available to the Agent app
+   */
   agents: AgentWithFQN[];
+  /**
+   * +label=Root Agent
+   * +usage=Root Agent for the app. This will be the first agent invoked
+   */
   root_agent: string;
 }
 /**
- * +usage=Blob Storage Location
- * +label=Blob Storage Location
+ * +label=Blob Storage Reference
+ * +usage=A reference to content offloaded to blob storage
  * +docs=Defines the structure for blob storage content references, including type, path, and mime_type
  */
 export interface BlobStorageReference {
+  /**
+   * +value=blob-storage
+   */
   type: "blob-storage";
   /**
    * +label=Path
@@ -2638,8 +2728,7 @@ export interface GitHelmRepo {
   value_files?: string[];
 }
 /**
- * +usage=Source for the entity
- * +label=Upload
+ * +label=TrueFoundry Managed Source
  */
 export interface TrueFoundryManagedSource {
   /**
@@ -2656,7 +2745,7 @@ export interface TrueFoundryManagedSource {
   uri?: string;
 }
 /**
- * +label=External Blob Storage
+ * +label=External Blob Storage Source
  */
 export interface ExternalBlobStorageSource {
   /**
@@ -2667,7 +2756,7 @@ export interface ExternalBlobStorageSource {
   type: "external";
   /**
    * +label=URI
-   * +usage=URI of the Blob Storage source
+   * +usage=URI referencing a path in the blob storage bucket linked to the MLRepo
    */
   uri: string;
 }
@@ -2991,6 +3080,97 @@ export interface AwsProviderAccount {
   integrations: AwsIntegrations[];
 }
 /**
+ * +label=Azure AI Inference Model
+ */
+export interface AzureAIInferenceModel {
+  /**
+   * +label=Display Name
+   * +usage=Name to identify this Azure AI model
+   * +sort=100
+   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +value=integration/model/azure/ai-inference
+   */
+  type: "integration/model/azure/ai-inference";
+  /**
+   * +label=Model Types
+   * +usage=Types of models supported by this Azure AI deployment
+   * +sort=200
+   */
+  model_types: ModelType[];
+  auth_data?: AzureKeyAuth;
+  /**
+   * +label=Deployment Configuration
+   * +usage=Configuration details for the Azure AI deployment
+   * +sort=400
+   */
+  deploymentDetails: AzureAIManagedDeployment | AzureAIServerlessDeployment;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Azure API Key Auth
+ */
+export interface AzureKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +sort=90
+   */
+  api_key: string;
+}
+/**
+ * +label=Azure AI Managed Deployment
+ */
+export interface AzureAIManagedDeployment {
+  /**
+   * +value=managed
+   */
+  type: "managed";
+  /**
+   * +label=Azure Deployment Name
+   * +usage=Name of the Azure AI deployment
+   * +sort=1
+   */
+  deploymentName: string;
+  /**
+   * +label=Azure Endpoint Name
+   * +usage=Name of the Azure AI endpoint
+   * +sort=2
+   */
+  endpointName: string;
+}
+/**
+ * +label=Azure AI Serverless Deployment
+ */
+export interface AzureAIServerlessDeployment {
+  /**
+   * +value=serverless
+   */
+  type: "serverless";
+  /**
+   * +label=Azure Deployment Name
+   * +usage=Name of the Azure AI deployment
+   * +sort=100
+   */
+  deploymentName: string;
+  /**
+   * +label=Azure Region
+   * +usage=Region where the Azure AI deployment is located
+   * +sort=200
+   */
+  region: string;
+}
+/**
  * +icon=azure-aks
  * +label=Azure AKS
  */
@@ -3173,15 +3353,19 @@ export interface AzureOpenAIModel {
   name: string;
   /**
    * +sort=2
+   * +label=Model ID
+   * +usage=This is the name of the deployment
    */
   model_id: string;
   /**
    * +value=integration/model/azure
    */
   type: "integration/model/azure";
-  auth_data: AzureOpenAIKeyAuth;
+  auth_data: AzureKeyAuth;
   /**
    * +sort=100
+   * +label=Azure Endpoint
+   * +usage=Azure OpenAI Service endpoint
    */
   azure_endpoint: string;
   /**
@@ -3201,19 +3385,6 @@ export interface AzureOpenAIModel {
    * +uiType=AuthorizedSubjects
    */
   authorized_subjects?: string[];
-}
-/**
- * +label=AzureOpenAI API Key Auth
- */
-export interface AzureOpenAIKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=90
-   */
-  api_key: string;
 }
 export interface PerThousandTokensCostMetric {
   /**
@@ -3985,43 +4156,36 @@ export interface CustomProviderAccount {
 export interface DataDirectory {
   /**
    * +label=Type
-   * +usage=Data Directory
-   * +docs=Data Directory
-   * +value="data-dir"
+   * +value=data-dir
    */
   type: "data-dir";
-  /**
-   * +label=Description
-   * +usage=Description of the data directory
-   * +docs=Description of the data directory
-   */
-  description?: string | null;
-  /**
-   * +label=Metadata
-   * +docs=Metadata for the data directory
-   * +usage=Metadata for the data directory
-   * +uiType=JsonInput
-   */
-  metadata: {};
   /**
    * +sort=1
    * +label=Name
    * +usage=Name of the data directory
-   * +docs=Name of the data directory
    * +message=The data directory name should start with lowercase alphabets and can contain alphanumeric and can include '-' in between
    */
   name: string;
   /**
-   * +label=ML Repo
-   * +usage=name of the ML Repo of the data directory
-   * +docs=name of the ML Repo of the data directory
+   * +label=MLRepo
+   * +usage=Name of the ML Repo to create the data directory under
    * +uiType=Hidden
    */
   ml_repo: string;
   /**
+   * +sort=2
+   * +label=Description
+   * +usage=Description for the data directory
+   */
+  description?: string | null;
+  /**
+   * +label=Metadata
+   * +usage=Key Value metadata. Should be valid JSON. For e.g. `{"business-unit": "sales", "quality": "good", "rating": 4.5}`
+   * +uiType=JsonInput
+   */
+  metadata: {};
+  /**
    * +label=Data Directory Source
-   * +usage=Source for the Data Directory
-   * +docs=Source for the Data Directory
    * +uiType=Group
    */
   source: TrueFoundryManagedSource | ExternalBlobStorageSource;
@@ -4258,6 +4422,40 @@ export interface Endpoint {
    */
   path?: string;
 }
+export interface Environment {
+  /**
+   * +value=environment
+   */
+  type: "environment";
+  /**
+   * +sort=100
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +usage=Environment Name
+   */
+  name: string;
+  /**
+   * +sort=300
+   * +uiType=MultiSelectPills
+   * +label=Environment Color
+   * +uiProps={"hideRadioIcon":true}
+   */
+  color: {};
+  /**
+   * +sort=400
+   * +label=Environment Type
+   * +message=Indicates if the environment is for production use
+   * +uiType=MultiSelectPills
+   * +uiProps={"hideRadioIcon":true}
+   */
+  isProduction: boolean;
+  /**
+   * +sort=500
+   * +label=Optimize Environment For
+   * +uiType=MultiSelectPills
+   * +uiProps={"hideRadioIcon":true}
+   */
+  optimizeFor: "COST" | "AVAILABILITY";
+}
 export interface FallbackConfig {
   name: string;
   type: "gateway-fallback-config";
@@ -4277,8 +4475,8 @@ export interface FallbackWhen {
   response_status_codes: number[];
 }
 /**
- * +docs=FastAI framework for the model version
  * +label=FastAI
+ * +icon=fastai
  */
 export interface FastAIFramework {
   /**
@@ -4504,6 +4702,20 @@ export interface LoadBalanceTarget {
   weight: number;
 }
 /**
+ * +label=GCP API Key Auth
+ */
+export interface GcpApiKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   */
+  apiKey: string;
+}
+/**
  * +icon=gcp-gcr
  * +label=GCP GCR
  */
@@ -4671,6 +4883,39 @@ export interface VertexModel {
   authorized_subjects?: string[];
 }
 /**
+ * +label=Google Model
+ * +icon=googleCloud
+ */
+export interface GoogleModel {
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +sort=2
+   */
+  model_id: string;
+  /**
+   * +value=integration/model/gcp/google
+   */
+  type: "integration/model/gcp/google";
+  /**
+   * +usage=Specify the type of the model
+   * +sort=4
+   */
+  model_types: ModelType[];
+  auth_data?: GcpApiKeyAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
  * +label=GCP
  * +icon=googleCloud
  * +heroDataKey=project_id
@@ -4693,8 +4938,13 @@ export interface GcpProviderAccount {
    * +usage=The project id of the GCP account.
    * +sort=200
    */
-  project_id: string;
-  auth_data?: GcpKeyFileAuth;
+  project_id?: string;
+  /**
+   * +label=GCP Account Auth Data
+   * +usage=Authentication data for the GCP account.
+   * +sort=400
+   */
+  auth_data?: GcpKeyFileAuth | GcpApiKeyAuth;
   /**
    * +label=Integrations
    * +usage=List of integrations that are associated with the GCP provider account.
@@ -4792,8 +5042,8 @@ export interface GitlabProviderAccount {
   integrations: GitlabIntegration[];
 }
 /**
- * +docs=Gluon framework for the model version
  * +label=Gluon
+ * +icon=gluon
  */
 export interface GluonFramework {
   /**
@@ -4900,8 +5150,8 @@ export interface GroqProviderAccount {
   integrations?: GroqIntegrations[];
 }
 /**
- * +docs=H2O framework for the model version
  * +label=H2O
+ * +icon=h2o
  */
 export interface H2OFramework {
   /**
@@ -6013,6 +6263,13 @@ export interface SparkJob {
    */
   env?: {} | null;
   /**
+   * +label=Spark Config Properties
+   * +usage=Extra configuration properties to be passed to the spark job. [Docs](https://spark.apache.org/docs/latest/configuration.html)
+   * +icon=fa-gear:#68BBE3
+   * +sort=21500
+   */
+  conf?: {} | null;
+  /**
    * +label=Mounts
    * +usage=Configure volumes to be mounted to driver and executors. [Docs](https://docs.truefoundry.com/docs/mounting-volumes-job)
    * +sort=22000
@@ -6155,41 +6412,6 @@ export interface VolumeBrowser {
    */
   service_account?: string;
 }
-export interface MLRepo {
-  /**
-   * +value=ml-repo
-   */
-  type: "ml-repo";
-  /**
-   * +label=Name
-   * +icon=fa-desktop:#black
-   * +message=Alphanumeric word, may contain '-' with a maximum length of 100 characters
-   * +sort=1
-   */
-  name: string;
-  /**
-   * +label=Description
-   * +icon=fa-desktop:#black
-   * +message=Description in a maximum of 500 characters
-   * +sort=2
-   */
-  description?: string;
-  /**
-   * +label=Storage Integration
-   * +icon=hard-drive
-   * +message=Select the storage-integration where you want to save your artifacts and models
-   * +usage=Storage integration enables secure storage of your artifacts and models in services like AWS S3, Azure Blob Storage, or Google Cloud Storage.
-   * [View Docs](https://docs.truefoundry.com/docs/integrations)
-   * +sort=4
-   */
-  storage_integration_fqn: string;
-  /**
-   * +label=Collaborators
-   * +sort=5
-   * +uiType=Collaborators
-   */
-  collaborators: Collaborator[];
-}
 export interface Intercept {
   /**
    * +value=intercept
@@ -6238,9 +6460,52 @@ export interface MirrorAction {
   percentage: number;
 }
 /**
- * +docs=Transformers framework for the model version
+ * +label=MLRepo
+ * +usage=MLRepo is a repository ML training runs that log params, metrics, plots, images and versioned entities like artifacts, models, prompts, tools, agents
+ */
+export interface MLRepo {
+  /**
+   * +value=ml-repo
+   */
+  type: "ml-repo";
+  /**
+   * +label=Name
+   * +icon=fa-desktop:#black
+   * +usage=Name of the ML Repo.
+   * +message=Alphanumeric word, may contain '-' with a maximum length of 100 characters
+   * +sort=1
+   */
+  name: string;
+  /**
+   * +label=Description
+   * +icon=fa-desktop:#black
+   * +usage=Description for the ML Repo.
+   * +message=Description can be maximum 500 characters
+   * +sort=2
+   * +placeholder=MLRepo to track text-classification experiments and models
+   * +uiProps={"descriptionInline":true}
+   */
+  description?: string;
+  /**
+   * +label=Storage Integration
+   * +icon=hard-drive
+   * +usage=Storage Integration to store artifacts and models. A storage integration represents a connected blob storage like AWS S3 / Azure Blob Storage / Google Cloud Storage.
+   * +message=Select the storage-integration where you want to save your artifacts and models
+   * [View Docs](https://docs.truefoundry.com/docs/integrations)
+   * +sort=4
+   */
+  storage_integration_fqn: string;
+  /**
+   * +label=Collaborators
+   * +sort=5
+   * +usage=Users and Teams that have access to MLRepo
+   * +uiType=Collaborators
+   */
+  collaborators: Collaborator[];
+}
+/**
  * +label=Transformers
- * +value=transformers
+ * +icon=transformers
  */
 export interface TransformersFramework {
   /**
@@ -6257,19 +6522,19 @@ export interface TransformersFramework {
   /**
    * +label=Pipeline Tag
    * +usage=The `pipeline()` task this model can be used with e.g. `text-generation`. See [huggingface docs](https://huggingface.co/docs/transformers/main/en/main_classes/pipelines#transformers.pipeline.task) for all possible values
-   * +docs=Pipeline tag for the framework
+   * +uiProps={"descriptionInline":true}
    */
   pipeline_tag?: string | null;
   /**
    * +label=Base Model
-   * +usage=Base model Id. If this is a finetuned model, this points to the base model used for finetuning
-   * +docs=Base model Id. If this is a finetuned model, this points to the base model used for finetuning
+   * +usage=Base model Id from HuggingFace Hub. If this is a finetuned model, this points to the base model id used for finetuning.
+   * +uiProps={"descriptionInline":true}
    */
   base_model?: string | null;
 }
 /**
- * +docs=TensorFlow framework for the model version
- * +label=TensorFlow
+ * +label=Tensorflow
+ * +icon=tensorflow
  */
 export interface TensorFlowFramework {
   /**
@@ -6280,8 +6545,8 @@ export interface TensorFlowFramework {
   type: "tensorflow";
 }
 /**
- * +docs=Scikit-learn framework for the model version
  * +label=Sklearn
+ * +icon=sklearn
  */
 export interface SklearnFramework {
   /**
@@ -6292,14 +6557,15 @@ export interface SklearnFramework {
   type: "sklearn";
   /**
    * +label=Model file path
-   * +usage=Relative path to the model file
+   * +usage=Relative path to the model file in the model version contents
+   * +uiProps={"descriptionInline":true}
    */
   model_filepath?: string;
   serialization_format?: SklearnSerializationFormat;
   model_schema?: SklearnModelSchema;
 }
 /**
- * +label=Sklearn Model Schema
+ * +label=Scikit Learn Model Schema
  */
 export interface SklearnModelSchema {
   /**
@@ -6310,17 +6576,19 @@ export interface SklearnModelSchema {
   /**
    * +label= Input Schema
    * +usage=Schema of the input
+   * +uiProps={"descriptionInline":true}
    */
   inputs: {}[];
   /**
    * +label= Output Schema
    * +usage=Schema of the output
+   * +uiProps={"descriptionInline":true}
    */
   outputs: {}[];
 }
 /**
- * +docs=PyTorch framework for the model version
  * +label=PyTorch
+ * +icon=pytorch
  */
 export interface PyTorchFramework {
   /**
@@ -6331,8 +6599,8 @@ export interface PyTorchFramework {
   type: "pytorch";
 }
 /**
- * +docs=Keras framework for the model version
  * +label=Keras
+ * +icon=keras
  */
 export interface KerasFramework {
   /**
@@ -6343,8 +6611,8 @@ export interface KerasFramework {
   type: "keras";
 }
 /**
- * +docs=XGBoost framework for the model version
  * +label=XGBoost
+ * +icon=xgboost
  */
 export interface XGBoostFramework {
   /**
@@ -6356,13 +6624,14 @@ export interface XGBoostFramework {
   serialization_format?: XGBoostSerializationFormat;
   /**
    * +label=Model file path
-   * +usage=Relative path to the model file
+   * +usage=Relative path to the model file in the model version contents
    */
   model_filepath?: string;
   model_schema?: XGBoostModelSchema;
 }
 /**
  * +label=XGBoost Model Schema
+ * +usage=Schema of the XGBoost model
  */
 export interface XGBoostModelSchema {
   /**
@@ -6373,17 +6642,19 @@ export interface XGBoostModelSchema {
   /**
    * +label= Input Schema
    * +usage=Schema of the input
+   * +uiProps={"descriptionInline":true}
    */
   inputs: {}[];
   /**
    * +label= Output Schema
    * +usage=Schema of the output
+   * +uiProps={"descriptionInline":true}
    */
   outputs: {}[];
 }
 /**
- * +docs=LightGBM framework for the model version
  * +label=LightGBM
+ * +icon=lightbgm
  */
 export interface LightGBMFramework {
   /**
@@ -6394,8 +6665,8 @@ export interface LightGBMFramework {
   type: "lightgbm";
 }
 /**
- * +docs=ONNX framework for the model version
  * +label=ONNX
+ * +icon=onnx
  */
 export interface ONNXFramework {
   /**
@@ -6406,8 +6677,8 @@ export interface ONNXFramework {
   type: "onnx";
 }
 /**
- * +docs=spaCy framework for the model version
  * +label=SpaCy
+ * +icon=spacy
  */
 export interface SpaCyFramework {
   /**
@@ -6418,8 +6689,8 @@ export interface SpaCyFramework {
   type: "spacy";
 }
 /**
- * +docs=StatsModels framework for the model version
  * +label=StatsModels
+ * +icon=statsmodel
  */
 export interface StatsModelsFramework {
   /**
@@ -6430,8 +6701,8 @@ export interface StatsModelsFramework {
   type: "statsmodels";
 }
 /**
- * +docs=PaddlePaddle framework for the model version
  * +label=Paddle
+ * +icon=paddle
  */
 export interface PaddleFramework {
   /**
@@ -6443,16 +6714,18 @@ export interface PaddleFramework {
 }
 /**
  * +label=Environment
+ * +usage=Runtime environment describing python version and dependencies for running the model
+ * +uiProps={"descriptionInline":true}
  */
 export interface ModelVersionEnvironment {
   /**
    * +label=Python Version
-   * +usage=Python version for the model version
+   * +usage=Python version to use when running the model
    */
   python_version?: string;
   /**
    * +label=PIP Packages
-   * +usage=PIP packages for the model version
+   * +usage=pip dependencies needed for running the model
    */
   pip_packages?: string[];
 }
@@ -6472,9 +6745,116 @@ export interface Team {
    * +label=Team Members
    * +message=Enter email of each of the user you want to add in the team.
    * +uiType=UserSelect
-   * +uiProps={"allowMultiple": true}
+   * +uiProps={"optionTypes": ["users"]}
    */
   members: string[];
+}
+export interface Policy {
+  /**
+   * +value=policy
+   */
+  type: "policy";
+  /**
+   * +label=Name
+   * +usage=Name of the Policy
+   * +sort=2
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Policy Action
+   * +usage=Defines if the policy mutates or validates resources
+   * +sort=3
+   */
+  operation: PolicyMutationOperation | PolicyValidationOperation;
+  /**
+   * +label=Mode
+   * +usage=Mode of the Policy
+   * +uiType=Select
+   * +sort=6
+   */
+  mode: "audit" | "enforce" | "disabled";
+  /**
+   * +label=Policy Scope
+   * +usage=Defines where the Policy applies
+   * +sort=7
+   */
+  when: {
+    /**
+     * +label=Entities
+     * +usage=Types of Entities this policy applies to
+     * +sort=8
+     */
+    entities?: PolicyEntityTypes[];
+    /**
+     * +label=Actions
+     * +usage=Actions this policy applies to
+     * +sort=9
+     */
+    actions?: PolicyActions[];
+    filters?: PolicyFilters;
+  };
+  /**
+   * +label=Policy Logic
+   * +usage=JavaScript/TypeScript code for Policy logic
+   * +sort=13
+   * +uiType=CodeEditor
+   * +uiProps={"language":"typescript"}
+   * +message=Code size must be between 1 byte and 10 KB
+   */
+  code: string;
+}
+/**
+ * +label=Mutate
+ */
+export interface PolicyMutationOperation {
+  /**
+   * +label=Action Type
+   * +usage=Mutates or Validates Resources
+   * +value=mutate
+   */
+  type: "mutate";
+  /**
+   * +label=Execution Priority
+   * +usage=Priority order for mutation policies
+   * +sort=5
+   * +message=Priority must be a positive integer less than or equal to 100
+   */
+  priority: number;
+}
+/**
+ * +label=Validate
+ */
+export interface PolicyValidationOperation {
+  /**
+   * +label=Action Type
+   * +usage=Mutates or Validates Resources
+   * +value=validate
+   */
+  type: "validate";
+}
+/**
+ * +label=Filters
+ */
+export interface PolicyFilters {
+  /**
+   * +label=Clusters
+   * +usage=Cluster names where Policy applies
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  cluster_names?: string[];
+  /**
+   * +label=Workspaces
+   * +usage=Workspace names where Policy applies
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  workspace_names?: string[];
+  /**
+   * +label=Environments
+   * +usage=Environment names where Policy applies
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  env_names?: string[];
 }
 /**
  * +label=Jfrog Artifacts Registry

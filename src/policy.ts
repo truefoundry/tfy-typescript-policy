@@ -1,16 +1,47 @@
 import { ValidationInput, ValidationError } from './types';
 
 export function validate(validationInput: ValidationInput): void {
-    if (validationInput.manifest.type !== 'service') {
-        return;
-    }
-    const service = validationInput.manifest;
+  const { manifest, context } = validationInput;
+  const envName = context.filters.env_name;
 
-    // Check if service has image property of type Build
-    if ('image' in service && service.image && 'build_source' in service.image) {
-        const buildSource = service.image.build_source;
-        if (buildSource.type === 'git' && buildSource.repo_url.toLowerCase().includes('github.com')) {
-            throw new ValidationError('GitHub repositories are not allowed as build sources');
-        }
+  if(manifest.type !== 'service') return;
+
+  if (envName === 'prod') {
+    if (!manifest.liveness_probe || !manifest.readiness_probe) {
+      throw new ValidationError(
+        'Liveness and Readiness probes are required for the prod environment.'
+      );
     }
+
+    const replicas = manifest.replicas;
+    if (!replicas) {
+      throw new ValidationError(
+        'Replicas are required for the prod environment.'
+      );
+    }
+
+    const minReplicas =
+      typeof replicas === 'number' ? replicas : replicas.min_replicas;
+    const maxReplicas =
+      typeof replicas === 'number' ? replicas : replicas.max_replicas;
+
+    if (minReplicas < 2 || maxReplicas > 10) {
+      throw new ValidationError(
+        'Replicas should be between 2 and 10 for the prod environment.'
+      );
+    }
+  } else if (envName === 'dev') {
+    if (!manifest.auto_shutdown) {
+      throw new ValidationError(
+        'Auto shutdown is required for the dev environment.'
+      );
+    }
+
+    if (manifest.auto_shutdown.wait_time >= 300) {
+      throw new ValidationError(
+        'Auto shutdown wait time should be less than 300 seconds for the dev environment.'
+      );
+    }
+  }
 }
+
