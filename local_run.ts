@@ -9,8 +9,11 @@ const dummyWorkspace: Workspace = {
 }
 
 const dummyValidationContext: ValidationContext = {
-    workspace_name: dummyWorkspace.name,
-    action: 'apply'
+    entity: 'service',
+    action: 'apply',
+    filters: {
+        env_name: 'dev',
+    }
 }
 
 // Sample service with GitHub build source (should throw error)
@@ -36,7 +39,10 @@ const githubService: Service = {
             protocol: 'TCP',
             expose: true
         }
-    ]
+    ],
+    auto_shutdown: {
+        wait_time: 300
+    }
 };
 
 const validationInput = {
@@ -45,7 +51,7 @@ const validationInput = {
 }
 
 try {
-    const validatedService = validate(validationInput);
+    const validatedService = validate(validationInput); // will throw error that auto_shutdown wait_time should be less than 300 seconds for the dev environment
     console.log(validatedService);
 } catch (error) {
     console.error(error);

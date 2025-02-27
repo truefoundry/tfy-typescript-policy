@@ -2,7 +2,7 @@ import { KubernetesObjectWithSpec } from '@kubernetes/client-node';
 import { Job, PolicyActions, PolicyEntityTypes, Service } from './models';
 
 export interface ValidationInput {
-  manifest: ApplicationManifest;
+  manifest: Manifest;
   context: ValidationContext;
 }
 export interface ValidationContext {
@@ -11,7 +11,7 @@ export interface ValidationContext {
   filters: Filters;
 }
 
-export type ApplicationManifest = Service | Job;
+export type Manifest = Service | Job;
 
 export interface MutationInput {
   outputK8sManifests: KubernetesObjectWithSpec[];
@@ -22,7 +22,7 @@ export interface MutationContext {
   entity: PolicyEntityTypes;
   action: PolicyActions;
   filters: Filters;
-  inputManifest: ApplicationManifest;
+  inputManifest: Manifest;
 }
 
 export interface Filters {
