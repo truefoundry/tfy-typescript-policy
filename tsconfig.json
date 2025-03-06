@@ -1,7 +1,10 @@
 {
     "compilerOptions": {
         /* Basic Options */
-        "typeRoots": ["./node_modules/@types"],
+        "typeRoots": [],
+        "incremental": true,
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+        "skipLibCheck": true,
         "target":
         "ESNEXT" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */,
         "module":

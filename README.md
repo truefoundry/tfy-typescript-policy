@@ -16,11 +16,11 @@ Now compile the policy and generate the kubernetes manifests:
 npm run compile
 
 > ts-example-policy@0.1.0 compile
-> tsc && webpack --config webpack.config.js
-asset bundle.js 857 bytes [compared for emit] [minimized] (name: main)
-./lib/index.js 223 bytes [built] [code generated]
-./lib/policy.js 726 bytes [built] [code generated]
-webpack 5.36.1 compiled successfully in 229 ms
+> tsc && esbuild lib/index.js --bundle --minify --outfile=dist/bundle.js
+
+  dist/bundle.js  2.1kb
+  
+⚡ Done in 5ms
 ```
 
 # Run the policy locally
