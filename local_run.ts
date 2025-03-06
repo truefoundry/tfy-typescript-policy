@@ -1,12 +1,6 @@
-import { Service, Workspace } from './src/models';
+import { Service } from './src/models';
 import { validate } from './src/policy';
 import { ValidationContext } from './src/types';
-
-const dummyWorkspace: Workspace = {
-    type: 'workspace',
-    cluster_fqn: 'test-cluster',
-    name: 'test-workspace'
-}
 
 const dummyValidationContext: ValidationContext = {
     entity: 'service',
