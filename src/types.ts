@@ -80,7 +80,7 @@ export interface KubernetesObject {
   metadata?: V1ObjectMeta;
 }
 export interface KubernetesObjectWithSpec extends KubernetesObject {
-  spec: object;
+  spec: Record<string,any>;
 }
 
 export interface ValidationInput {
@@ -96,7 +96,7 @@ export interface ValidationContext {
 export type Manifest = Service | Job;
 
 export interface MutationInput {
-  outputK8sManifests: KubernetesObjectWithSpec[];
+  generatedK8sManifests: KubernetesObjectWithSpec[];
   context: MutationContext;
 }
 
