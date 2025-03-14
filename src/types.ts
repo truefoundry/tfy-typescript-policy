@@ -1,4 +1,4 @@
-import { Job, PolicyActions, PolicyEntityTypes, Service } from './models';
+import { Job, Notebook, PolicyEntityTypes, RStudio, Service, SSHServer } from './models';
 
 export declare class V1OwnerReference {
   'apiVersion': string;
@@ -88,12 +88,13 @@ export interface ValidationInput {
   context: ValidationContext;
 }
 export interface ValidationContext {
-  entity: PolicyEntityTypes;
-  action: PolicyActions;
-  filters: Filters;
+  entityType: PolicyEntityTypes;
+  workspaceName: string;
+  clusterName: string;
+  envName: string;
 }
 
-export type Manifest = Service | Job;
+export type Manifest = Service | Job | Notebook | SSHServer | RStudio;
 
 export interface MutationInput {
   generatedK8sManifests: KubernetesObjectWithSpec[];
@@ -101,16 +102,11 @@ export interface MutationInput {
 }
 
 export interface MutationContext {
-  entity: PolicyEntityTypes;
-  action: PolicyActions;
-  filters: Filters;
+  entityType: PolicyEntityTypes;
   inputManifest: Manifest;
-}
-
-export interface Filters {
-  workspace_name?: string;
-  cluster_name?: string;
-  env_name?: string;
+  workspaceName: string;
+  clusterName: string;
+  envName: string;
 }
 
 export class ValidationError extends Error {
