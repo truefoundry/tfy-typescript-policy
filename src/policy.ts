@@ -2,7 +2,7 @@ import { ValidationInput, ValidationError } from './types';
 
 export function validate(validationInput: ValidationInput): void {
   const { manifest, context } = validationInput;
-  const envName = context.filters.env_name;
+  const envName = context.envName;
 
   if(manifest.type !== 'service') return;
 

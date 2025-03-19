@@ -3,12 +3,11 @@ import { validate } from './src/policy';
 import { ValidationContext } from './src/types';
 
 const dummyValidationContext: ValidationContext = {
-    entity: 'service',
-    action: 'apply',
-    filters: {
-        env_name: 'dev',
-    }
-}
+  entityType: 'service',
+  envName: 'dev',
+  clusterName: 'cluster',
+  workspaceName: 'workspace'
+};
 
 // Sample service with GitHub build source (should throw error)
 const githubService: Service = {
