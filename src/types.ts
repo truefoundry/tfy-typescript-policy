@@ -1,4 +1,4 @@
-import { Job, Notebook, PolicyEntityTypes, RStudio, Service, SSHServer } from './models';
+import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow } from './models';
 
 export declare class V1OwnerReference {
   'apiVersion': string;
@@ -94,10 +94,11 @@ export interface ValidationContext {
   envName: string;
 }
 
-export type Manifest = Service | Job | Notebook | SSHServer | RStudio;
+export type Manifest = Service | Job | Notebook | SSHServer | Workflow;
 
 export interface MutationInput {
-  generatedK8sManifests: KubernetesObjectWithSpec[];
+  generatedK8sManifests?: KubernetesObjectWithSpec[];
+  flyteTasks?: Record<string,any>;
   context: MutationContext;
 }
 

@@ -45,15 +45,7 @@ export type Agent = BaseArtifactVersion & {} & {
    */
   type?: "agent";
   /**
-   * +sort=30
-   * +uiType=Hidden
-   * +label=Tools
-   * +usage=Tools available to the agent
-   * +uiProps={"descriptionInline":true}
-   */
-  available_tools?: string[];
-  /**
-   * +sort=10
+   * +sort=100
    * +uiType=TextArea
    * +label=Goal
    * +usage=Short form description. Will be used as `description` when this agent is used as a tool.
@@ -62,7 +54,7 @@ export type Agent = BaseArtifactVersion & {} & {
   goal?: string;
   /**
    * `instruction` is the system prompt for now. (2.5 * 1024)
-   * +sort=20
+   * +sort=150
    * +uiType=AgentInstructions
    * +uiProps={"helpText":"Use the syntax ${Tool FQN} to reference a tool, and ${AGENT FQN} to reference another agent"}
    * +label=Instructions
@@ -71,7 +63,15 @@ export type Agent = BaseArtifactVersion & {} & {
    */
   instruction?: string;
   /**
-   * +sort=40
+   * +sort=200
+   * +uiType=Hidden
+   * +label=Tools
+   * +usage=Tools available to the agent
+   * +uiProps={"descriptionInline":true}
+   */
+  available_tools?: string[];
+  /**
+   * +sort=300
    * +uiType=EnabledModelSelector
    * +uiProps={"searchable":true,"modelType":"chat","providerType":"openai"}
    * +label=Model
@@ -231,7 +231,10 @@ export type ArtifactVersion = BaseArtifactVersion & {} & {
    * +label=Artifact Source
    * +uiType=Group
    */
-  source?: TrueFoundryManagedSource | ExternalBlobStorageSource;
+  source?:
+    | TrueFoundryManagedSource
+    | ExternalBlobStorageSource
+    | LocalArtifactSource;
   /**
    * +label=Step
    * +usage=Step/Epoch number in an iterative training loop the artifact version was created. Generally useful when logging a model version from a MLRepo Run
@@ -275,7 +278,8 @@ export type CustomIntegrations =
   | CustomModel
   | EmailNotificationChannel
   | CustomHelmRepo
-  | CustomBlobStorage;
+  | CustomBlobStorage
+  | CustomJWTAuthIntegration;
 export type GCPRegion =
   | "asia-east1"
   | "asia-east2"
@@ -474,7 +478,10 @@ export type ModelVersion = BaseArtifactVersion & {} & {
    * +label=Model Source
    * +uiType=Group
    */
-  source?: TrueFoundryManagedSource | ExternalBlobStorageSource;
+  source?:
+    | TrueFoundryManagedSource
+    | ExternalBlobStorageSource
+    | LocalModelSource;
   /**
    * +label=Framework
    * +usage=Framework for the model version like Transformers, PyTorch, Sklearn, Xgboost etc with framework specific metadata. This will be used to infer model deployment configuration
@@ -523,7 +530,12 @@ export type XGBoostSerializationFormat =
   | "joblib"
   | "pickle"
   | "json";
-export type PolicyEntityTypes = "service" | "job";
+export type PolicyEntityTypes =
+  | "service"
+  | "job"
+  | "notebook"
+  | "ssh-server"
+  | "workflow";
 export type PolicyActions = "apply";
 
 /**
@@ -739,6 +751,7 @@ export interface BaseArtifactVersion {
    */
   description?: string | null;
   /**
+   * +sort=50000
    * +label=Metadata
    * +usage=Key value metadata. Should be valid JSON. For e.g. `{"business-unit": "sales", "quality": "good", "rating": 4.5}`
    * +uiType=JsonInput
@@ -746,6 +759,7 @@ export interface BaseArtifactVersion {
    */
   metadata: {};
   /**
+   * +sort=51000
    * +label=Version Alias
    * +usage=Version alias is alternate, ideally human readable, version string to reference an artifact version. It should start with `v` followed by alphanumeric and it can include `.` and `-` in between (e.g. `v1.0.0`, `v1-prod`, `v3-dev`, etc)
    * +message=The version alias should start with `v` followed by alphanumeric and can include `.` and `-` in between (e.g. `v1.0.0`, `v1-prod`, `v3-dev`, etc)
@@ -1586,9 +1600,36 @@ export interface NvidiaMIGGPU {
   name?: string;
   /**
    * +label=MIG Profile
-   * +usage=Name of the MIG profile to use. One of [1g.5gb, 2g.10gb, 3g.20gb, 1g.10gb, 2g.20gb, 3g.40gb]
+   * +usage=Name of the MIG profile to use. One of the following based on gpu type
+   * Please refer to https://docs.nvidia.com/datacenter/tesla/mig-user-guide/#supported-mig-profiles for more details
+   * A100 40 GB - [1g.5gb, 1g.10gb, 2g.10gb, 3g.20gb, 4g.20gb]
+   * A100 80 GB / H100 80 GB - [1g.10gb, 1g.20gb, 2g.20gb, 3g.40gb, 4g.40gb]
+   * H100 94 GB - [1g.12gb, 1g.24gb, 2g.24gb, 3g.47gb, 4g.47gb]
+   * H100 96 GB - [1g.12gb, 1g.24gb, 2g.24gb, 3g.48gb, 4g.48gb]
+   * H200 141 GB - [1g.18gb, 1g.35gb, 2g.35gb, 3g.71gb, 4g.71gb]
    */
-  profile: "1g.5gb" | "2g.10gb" | "3g.20gb" | "1g.10gb" | "2g.20gb" | "3g.40gb";
+  profile:
+    | "1g.5gb"
+    | "1g.10gb"
+    | "1g.12gb"
+    | "1g.18gb"
+    | "1g.20gb"
+    | "1g.24gb"
+    | "1g.35gb"
+    | "2g.10gb"
+    | "2g.20gb"
+    | "2g.24gb"
+    | "2g.35gb"
+    | "3g.20gb"
+    | "3g.40gb"
+    | "3g.47gb"
+    | "3g.48gb"
+    | "3g.71gb"
+    | "4g.20gb"
+    | "4g.40gb"
+    | "4g.47gb"
+    | "4g.48gb"
+    | "4g.71gb";
 }
 export interface NvidiaTimeslicingGPU {
   /**
@@ -1680,7 +1721,7 @@ export interface Port {
   /**
    * +usage=Authentication method for inbound traffic
    */
-  auth?: BasicAuthCreds | JwtAuthCreds | TrueFoundryInteractiveLogin;
+  auth?: BasicAuthCreds | JwtAuthConfig | TrueFoundryInteractiveLogin;
 }
 /**
  * +label=Username and password
@@ -1707,29 +1748,44 @@ export interface BasicAuthCreds {
  * +label=JWT Authentication
  * +usage=Configure JWT-based authentication using JWKS
  */
-export interface JwtAuthCreds {
+export interface JwtAuthConfig {
   /**
    * +value=jwt_auth
    */
   type: "jwt_auth";
   /**
-   * +label=Issuer
-   * +usage=The issuer of the JWT tokens
+   * +docs=FQN of the JWT Auth integration. You can use the FQN of your desired jwt auth integration (or add one)
+   * in the  Integrations page[Integrations](/integrations) page
+   * +label=JWT Auth Integration
+   * +sort=200
+   * +usage=FQN of the JWT Auth integration. If you can't find your integration here,
+   * add it through the [Integrations](/integrations) page
+   * +uiType=IntegrationSelect
+   * +uiProps={"integrationType":"jwt-auth"}
    */
-  issuer: string;
+  integration_fqn: string;
   /**
-   * +label=JWKS URI
-   * +usage=The URI of the JSON Web Key Set (JWKS) containing the public keys
+   * +label=Enable Login
+   * +usage=Enable login for the service
+   * +sort=300
    */
-  jwksUri: string;
+  enable_login?: boolean;
   /**
    * +label=Claims
    * +usage=List of key-value pairs of claims to verify in the JWT token
+   * +sort=400
    */
   claims?: {
     key: string;
     values: string[];
   }[];
+  /**
+   * +label=Paths that will bypass auth
+   * +usage=List of paths that will bypass auth.
+   * needs to start with a forward slash(/) and should not contain wildcards(*)
+   * +sort=500
+   */
+  bypass_auth_paths?: string[];
 }
 /**
  * +label=Login with truefoundry
@@ -1739,6 +1795,12 @@ export interface TrueFoundryInteractiveLogin {
    * +value=truefoundry_oauth
    */
   type: "truefoundry_oauth";
+  /**
+   * +label=Paths that will bypass auth
+   * +usage=List of paths that will bypass auth.
+   * needs to start with a forward slash(/) and should not contain wildcards(*)
+   */
+  bypass_auth_paths?: string[];
 }
 export interface SecretMount {
   /**
@@ -2727,6 +2789,18 @@ export interface GitHelmRepo {
    */
   value_files?: string[];
 }
+export interface ArtifactPath {
+  /**
+   * +label=Source path
+   * +usage=Local file or folder path
+   */
+  src: string;
+  /**
+   * +label=Destination path
+   * +usage=Relative path where the file or folder will be uploaded to in the artifact
+   */
+  dest?: string;
+}
 /**
  * +label=TrueFoundry Managed Source
  */
@@ -2759,6 +2833,19 @@ export interface ExternalBlobStorageSource {
    * +usage=URI referencing a path in the blob storage bucket linked to the MLRepo
    */
   uri: string;
+}
+export interface LocalArtifactSource {
+  /**
+   * +label=Type
+   * +usage=Type of the source
+   * +value=local
+   */
+  type: "local";
+  /**
+   * +label=Paths
+   * +usage=Array of ArtifactPath objects representing the source and destination paths
+   */
+  paths: ArtifactPath[];
 }
 /**
  * +label=AWS Access Key Based Auth
@@ -3589,7 +3676,7 @@ export interface Cluster {
    * +label=Name
    * +icon=fa-desktop:#black
    * +sort=10
-   * +message=3 to 25 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +message=3 to 35 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
@@ -4123,6 +4210,82 @@ export interface SMTPCredentials {
    * +sort=700
    */
   tls: boolean;
+}
+/**
+ * +label=Custom JWT Auth Integration
+ * +icon=puzzle-piece
+ */
+export interface CustomJWTAuthIntegration {
+  /**
+   * +value=integration/jwt-auth/custom
+   */
+  type: "integration/jwt-auth/custom";
+  /**
+   * +label=Name
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=100
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Issuer
+   * +usage=The base URL of the authentication provider.
+   * +sort=200
+   */
+  issuer: string;
+  /**
+   * +label=JWKS URI
+   * +usage=The JSON Web Key Set URI for JWT verification.
+   * +sort=300
+   */
+  jwks_uri: string;
+  login_provider?: OAuth2LoginProvider;
+}
+/**
+ * +label=OAuth2 Client Configuration
+ * +usage=OAuth2 client configuration to get the JWT.
+ */
+export interface OAuth2LoginProvider {
+  /**
+   * +value=oauth2
+   */
+  type: "oauth2";
+  /**
+   * +label=Client ID
+   * +usage=client ID for OAuth2.
+   * +sort=200
+   */
+  client_id: string;
+  /**
+   * +label=Client Secret
+   * +usage=Client secret or the TrueFoundry secret containing the client secret for OAuth2.
+   * +sort=300
+   */
+  client_secret: string;
+  /**
+   * +label=Authorization URL
+   * +usage=URL for the authorization request
+   * +sort=400
+   */
+  authorization_url: string;
+  /**
+   * +label=Token URL
+   * +usage=The endpoint to exchange auth code for tokens.
+   * +sort=500
+   */
+  token_url: string;
+  /**
+   * +label=Scopes
+   * +usage=List of scopes to request from the OAuth2 provider.
+   * +sort=600
+   */
+  scopes: string[];
+  /**
+   * +label=JWT Source
+   * +usage=Source of the JWT token to be used for verification.
+   * +sort=700
+   */
+  jwt_source: "access_token" | "id_token";
 }
 /**
  * +label=Custom
@@ -6503,6 +6666,19 @@ export interface MLRepo {
    */
   collaborators: Collaborator[];
 }
+export interface LocalModelSource {
+  /**
+   * +label=Type
+   * +usage=Type of the source
+   * +value=local
+   */
+  type: "local";
+  /**
+   * +label=Path to the model file or folder
+   * +usage=Path to the model file or folder
+   */
+  file_or_folder: string;
+}
 /**
  * +label=Transformers
  * +icon=transformers
@@ -6769,34 +6945,37 @@ export interface Policy {
   operation: PolicyMutationOperation | PolicyValidationOperation;
   /**
    * +label=Mode
-   * +usage=Mode of the Policy
-   * +uiType=Select
+   * +usage=Mode of the policy: `Audit` logs all policy evaluations without blocking deployments, `Enforce` blocks deployments if the policy fails, and `Disabled` deactivates the policy.
+   * +uiType=Radio
    * +sort=6
    */
   mode: "audit" | "enforce" | "disabled";
   /**
-   * +label=Policy Scope
-   * +usage=Defines where the Policy applies
+   * +label=Description
+   * +usage=Description of the Policy
    * +sort=7
+   * ++uiProps={"descriptionInline":true}
+   * +message=Description must be between 1 byte and 1024 bytes
    */
-  when: {
-    /**
-     * +label=Entities
-     * +usage=Types of Entities this policy applies to
-     * +sort=8
-     */
-    entities?: PolicyEntityTypes[];
-    /**
-     * +label=Actions
-     * +usage=Actions this policy applies to
-     * +sort=9
-     */
-    actions?: PolicyActions[];
-    filters?: PolicyFilters;
-  };
+  description: string;
   /**
-   * +label=Policy Logic
-   * +usage=JavaScript/TypeScript code for Policy logic
+   * +label=Entities
+   * +usage=Types of Entities this policy applies to
+   * +uiType=MultiSelect
+   * +sort=8
+   */
+  entities: PolicyEntityTypes[];
+  /**
+   * +label=Actions
+   * +usage=Actions this policy applies to
+   * +uiType=Hidden
+   * +sort=9
+   */
+  actions: PolicyActions[];
+  filters?: PolicyFilters;
+  /**
+   * +label=Policy Code
+   * +usage=TypeScript code for Policy logic. To write and test your policy code, please refer to this [repository](https://github.com/truefoundry/tfy-typescript-policy)
    * +sort=13
    * +uiType=CodeEditor
    * +uiProps={"language":"typescript"}
@@ -6815,12 +6994,12 @@ export interface PolicyMutationOperation {
    */
   type: "mutate";
   /**
-   * +label=Execution Priority
-   * +usage=Priority order for mutation policies
+   * +label=Execution Order
+   * +usage=Defines the execution sequence for mutation policies. Lower values execute first.
    * +sort=5
-   * +message=Priority must be a positive integer less than or equal to 100
+   * +message=Order must be a positive integer less than or equal to 100
    */
-  priority: number;
+  order: number;
 }
 /**
  * +label=Validate
