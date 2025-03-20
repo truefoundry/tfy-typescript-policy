@@ -1,4 +1,4 @@
-import { MutationInput, MutationOutput } from './types';
+import { MutationInput, MutationOutput } from '@src/types';
 
 export function mutate(mutationInput: MutationInput): MutationOutput {
   const { generatedK8sManifests, flyteTasks } = mutationInput;

@@ -1,4 +1,4 @@
-import { MutationInput, MutationOutput } from './types';
+import { MutationInput, MutationOutput } from '@src/types';
 
 export function mutate(mutationInput: MutationInput): MutationOutput {
   const { generatedK8sManifests, flyteTasks } = mutationInput;
@@ -8,21 +8,28 @@ export function mutate(mutationInput: MutationInput): MutationOutput {
       if (
         manifest.kind &&
         ['Deployment', 'StatefulSet'].includes(manifest.kind) &&
-        manifest.spec.template.spec.affinity
+        manifest.spec.template.spec
       ) {
-        manifest.spec.template.spec.affinity.nodeAffinity = {
-          requiredDuringSchedulingIgnoredDuringExecution: {
-            nodeSelectorTerms: [
-              {
-                matchExpressions: [
-                  {
-                    key: 'kubernetes.io/hostname',
-                    operator: 'In',
-                    values: ['node-1'],
-                  },
-                ],
-              },
-            ],
+        manifest.spec.template.spec.affinity = {
+          ...(manifest.spec.template.spec.affinity || {}),
+          nodeAffinity: {
+            ...(manifest.spec.template.spec.affinity?.nodeAffinity || {}),
+            requiredDuringSchedulingIgnoredDuringExecution: {
+              nodeSelectorTerms: [
+                ...(manifest.spec.template.spec.affinity?.nodeAffinity
+                  ?.requiredDuringSchedulingIgnoredDuringExecution
+                  ?.nodeSelectorTerms || []),
+                {
+                  matchExpressions: [
+                    {
+                      key: 'kubernetes.io/hostname',
+                      operator: 'In',
+                      values: ['node-1'],
+                    },
+                  ],
+                },
+              ],
+            },
           },
         };
       } else if (
@@ -30,10 +37,14 @@ export function mutate(mutationInput: MutationInput): MutationOutput {
         manifest.spec.templates
       ) {
         for (const template of manifest.spec.templates) {
-          if (template.affinity?.nodeAffinity) {
+          if (template.affinity) {
             template.affinity.nodeAffinity = {
+              ...(template.affinity.nodeAffinity || {}),
               requiredDuringSchedulingIgnoredDuringExecution: {
                 nodeSelectorTerms: [
+                  ...(template.affinity.nodeAffinity
+                    ?.requiredDuringSchedulingIgnoredDuringExecution
+                    ?.nodeSelectorTerms || []),
                   {
                     matchExpressions: [
                       {
@@ -55,21 +66,26 @@ export function mutate(mutationInput: MutationInput): MutationOutput {
   } else if (flyteTasks) {
     for (const task of Object.values(flyteTasks)) {
       if (task.template.k8sPod.podSpec) {
-        task.template.k8sPod.podSpec.affinity =
-          task.template.k8sPod.podSpec.affinity || {};
-        task.template.k8sPod.podSpec.affinity.nodeAffinity = {
-          requiredDuringSchedulingIgnoredDuringExecution: {
-            nodeSelectorTerms: [
-              {
-                matchExpressions: [
-                  {
-                    key: 'kubernetes.io/hostname',
-                    operator: 'In',
-                    values: ['node-1'],
-                  },
-                ],
-              },
-            ],
+        task.template.k8sPod.podSpec.affinity = {
+          ...(task.template.k8sPod.podSpec.affinity || {}),
+          nodeAffinity: {
+            ...(task.template.k8sPod.podSpec.affinity?.nodeAffinity || {}),
+            requiredDuringSchedulingIgnoredDuringExecution: {
+              nodeSelectorTerms: [
+                ...(task.template.k8sPod.podSpec.affinity?.nodeAffinity
+                  ?.requiredDuringSchedulingIgnoredDuringExecution
+                  ?.nodeSelectorTerms || []),
+                {
+                  matchExpressions: [
+                    {
+                      key: 'kubernetes.io/hostname',
+                      operator: 'In',
+                      values: ['node-1'],
+                    },
+                  ],
+                },
+              ],
+            },
           },
         };
       }

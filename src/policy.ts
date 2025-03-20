@@ -1,4 +1,4 @@
-import { ValidationInput, ValidationError } from './types';
+import { ValidationInput, ValidationError } from '@src/types';
 
 export function validate(validationInput: ValidationInput): void {
   const { manifest, context } = validationInput;
