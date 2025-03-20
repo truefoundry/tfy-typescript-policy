@@ -102,6 +102,11 @@ export interface MutationInput {
   context: MutationContext;
 }
 
+export interface MutationOutput {
+  generatedK8sManifests?: KubernetesObjectWithSpec[];
+  flyteTasks?: Record<string,any>;
+}
+
 export interface MutationContext {
   entityType: PolicyEntityTypes;
   inputManifest: Manifest;
