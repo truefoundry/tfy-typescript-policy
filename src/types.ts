@@ -1,4 +1,4 @@
-import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow } from './models';
+import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow, Environment } from './models';
 
 export declare class V1OwnerReference {
   'apiVersion': string;
@@ -84,17 +84,23 @@ export interface KubernetesObjectWithSpec extends KubernetesObject {
 }
 
 export interface ValidationInput {
-  manifest: Manifest;
+  manifest: ApplicationManifest;
   context: ValidationContext;
 }
 export interface ValidationContext {
   entityType: PolicyEntityTypes;
   workspaceName: string;
   clusterName: string;
-  envName: string;
+  environment: {
+    manifest: Environment;
+  };
+  lastDeployment: {
+    manifest?: ApplicationManifest;
+  };
+  createdByUser: object;
 }
 
-export type Manifest = Service | Job | Notebook | SSHServer | Workflow;
+export type ApplicationManifest = Service | Job | Notebook | SSHServer | Workflow;
 
 export interface MutationInput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];
@@ -102,17 +108,13 @@ export interface MutationInput {
   context: MutationContext;
 }
 
-export interface MutationOutput {
+export class MutationOutput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];
   flyteTasks?: Record<string,any>;
 }
 
-export interface MutationContext {
-  entityType: PolicyEntityTypes;
-  inputManifest: Manifest;
-  workspaceName: string;
-  clusterName: string;
-  envName: string;
+export interface MutationContext extends ValidationContext {
+  inputManifest: ApplicationManifest;
 }
 
 export class ValidationError extends Error {
