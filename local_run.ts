@@ -4,7 +4,24 @@ import { ValidationContext } from './src/types';
 
 const dummyValidationContext: ValidationContext = {
   entityType: 'service',
-  envName: 'dev',
+  environment: {
+    manifest: {
+      type: 'environment',
+      name: 'dev',
+      color: '#000000',
+      isProduction: false,
+      optimizeFor: 'COST'
+    }
+  },
+  lastDeployment: {
+    manifest: undefined,
+  },
+  createdByUser: {
+    "subjectId":"truefoundry",
+    "subjectSlug": "truefoundry",
+    "subjectType": "serviceaccount",
+    "subjectDisplayName": "truefoundry"
+  },
   clusterName: 'cluster',
   workspaceName: 'workspace'
 };
