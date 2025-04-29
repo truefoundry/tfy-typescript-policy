@@ -11,6 +11,6 @@
         "esbuild": "0.25.0"
     },
     "scripts": {
-        "compile": "tsc && esbuild lib/index.js --bundle --minify --outfile=dist/bundle.js"
+        "compile": "tsc && esbuild lib/src/index.js --bundle --minify --outfile=dist/bundle.js"
     }
 }

@@ -61,8 +61,8 @@ const validationInput = {
 }
 
 try {
-    const validatedService = validate(validationInput); // will throw error that auto_shutdown wait_time should be less than 300 seconds for the dev environment
-    console.log(validatedService);
+    validate(validationInput); // will throw error that auto_shutdown wait_time should be less than 300 seconds for the dev environment
+    console.log(`Validation successful for ${githubService.name}`);
 } catch (error) {
     console.error(error);
 }
