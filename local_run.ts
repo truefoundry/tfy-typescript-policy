@@ -1,6 +1,6 @@
 import { Service } from './src/models';
 import { validate } from './src/policy';
-import { ValidationContext } from './src/types';
+import { SubjectType, ValidationContext } from './src/types';
 
 const dummyValidationContext: ValidationContext = {
   entityType: 'service',
@@ -13,13 +13,11 @@ const dummyValidationContext: ValidationContext = {
       optimizeFor: 'COST'
     }
   },
-  lastDeployment: {
-    manifest: undefined,
-  },
+  activeDeployment: undefined,
   createdByUser: {
     "subjectId":"truefoundry",
     "subjectSlug": "truefoundry",
-    "subjectType": "serviceaccount",
+    "subjectType": SubjectType.serviceaccount,
     "subjectDisplayName": "truefoundry"
   },
   clusterName: 'cluster',

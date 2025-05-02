@@ -87,17 +87,30 @@ export interface ValidationInput {
   manifest: ApplicationManifest;
   context: ValidationContext;
 }
+
+export enum SubjectType {
+  user = 'user',
+  team = 'team',
+  serviceaccount = 'serviceaccount',
+}
+export interface Subject {
+  subjectId: string;
+  subjectType: SubjectType;
+  subjectSlug?: string;
+  subjectDisplayName?: string;
+}
+
 export interface ValidationContext {
   entityType: PolicyEntityTypes;
   workspaceName: string;
   clusterName: string;
-  environment: {
+  environment?: {
     manifest: Environment;
   };
-  lastDeployment: {
-    manifest?: ApplicationManifest;
+  createdByUser: Subject;
+  activeDeployment?: {
+    manifest: object;
   };
-  createdByUser: object;
 }
 
 export type ApplicationManifest = Service | Job | Notebook | SSHServer | Workflow;
