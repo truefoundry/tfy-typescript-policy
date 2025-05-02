@@ -7,7 +7,7 @@ This directory contains example policies that demonstrate how to use the TrueFou
 ```
 examples/
 ├── validation/           # Validation policy examples
-│   ├── auto-shutdown/    # Example for enforcing auto-shutdown in dev environments
+│   ├── gpu-auto-shutdown/    # Example for enforcing auto-shutdown in dev environments for GPUs
 ├── mutation/            # Mutation policy examples
 │   ├── image-prefix/    # Example for modifying container image prefixes
 │   ├── node-affinity/   # Example for adding node affinity rules
