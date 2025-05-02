@@ -5,10 +5,8 @@ export function validate(validationInput: ValidationInput): void {
   const environment = context.environment;
   const isProduction = environment?.manifest.isProduction;
 
-  // Only apply this validation in production environments
   if (!isProduction) return;
 
-  // Skip non-service manifests
   if (manifest.type !== 'service') return;
 
   const replicas = manifest.replicas || 1;
