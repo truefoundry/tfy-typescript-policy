@@ -6,7 +6,6 @@ export function validate(validationInput: ValidationInput): void {
   const isProduction = environment?.manifest.isProduction;
 
   if (!isProduction) return;
-  if (manifest.type !== 'service') return;
 
   const imageType = manifest.image?.type;
   const buildSourceType = manifest.image?.build_source?.type;
