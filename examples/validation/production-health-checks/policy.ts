@@ -8,7 +8,7 @@ export function validate(validationInput: ValidationInput): void {
   if (!isProduction) return;
   if (!manifest.liveness_probe || !manifest.readiness_probe) {
     throw new ValidationError(
-      'Liveness and Readiness probes are required for the dev environment.'
+      'Liveness and Readiness probes are required for production services.'
     );
   }
 } 
