@@ -6,16 +6,12 @@ export function validate(validationInput: ValidationInput): void {
   const isProduction = environment?.manifest.isProduction;
 
   if (!isProduction) return;
+  if (manifest.type !== 'service') return;
 
   const imageType = manifest.image?.type;
-  const buildSourceType = manifest.image?.build_source?.type;
-
-  const isValidBuildType = imageType === 'build';
-  const isValidImageType = imageType === 'image' && ['git', 'remote'].includes(buildSourceType);
-
-  if (!isValidBuildType && !isValidImageType) {
+  if (imageType === 'build' && !['git', 'remote'].includes(manifest.image?.build_source?.type)) {
     throw new ValidationError(
-      'Production services must use either build type or image type with git/remote source'
+      'Production services must use either image or build with git/remote source'
     );
   }
 } 

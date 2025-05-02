@@ -6,6 +6,7 @@ export function validate(validationInput: ValidationInput): void {
   const isProduction = environment?.manifest.isProduction;
 
   if (!isProduction) return;
+  if (manifest.type !== 'service') return;
   if (!manifest.liveness_probe || !manifest.readiness_probe) {
     throw new ValidationError(
       'Liveness and Readiness probes are required for production services.'

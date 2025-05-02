@@ -6,10 +6,11 @@ export function validate(validationInput: ValidationInput): void {
   const isProduction = environment?.manifest.isProduction;
 
   if (isProduction) return;
-  if(manifest?.resources?.cpu_limit && manifest?.resources?.cpu_limit > 32) {
+  if (manifest.type !== 'service') return;
+  if(manifest.resources?.cpu_limit && manifest.resources.cpu_limit > 32) {
     throw new ValidationError('Service cannot request more than 32 CPUs');
   }
-  if(manifest?.resources?.memory_limit && manifest?.resources?.memory_limit > 96000) {
+  if(manifest.resources?.memory_limit && manifest.resources.memory_limit > 96000) {
     throw new ValidationError('Service cannot request more than 96GB RAM (96000MB)');
   }
 } 
