@@ -149,6 +149,8 @@ export type AgentWithFQN = Agent & {} & {
    */
   fqn?: string;
 };
+export type NotificationTarget = Email | SlackWebhook | SlackBot;
+export type AlertSeverity = "warning" | "critical";
 /**
  * +docs=Describes the configuration for the service
  */
@@ -216,6 +218,7 @@ export type AsyncServiceAutoscaling = BaseAutoscaling & {} & {
     | CronMetric
     | AMQPMetricConfig;
 };
+export type JobEvent = "START" | "SUCCEEDED" | "FAILED" | "TERMINATED";
 /**
  * +label=Artifact Version
  * +usage=Log a new Artifact Version containing files and folders with metadata
@@ -262,7 +265,8 @@ export type AzureIntegrations =
   | AzureOpenAIModel
   | AzureVault
   | AzureReposIntegration
-  | AzureAIInferenceModel;
+  | AzureAIInferenceModel
+  | AzureFoundryModel;
 /**
  * +docs=Describes the configuration for the code server
  */
@@ -280,6 +284,7 @@ export type CustomIntegrations =
   | CustomHelmRepo
   | CustomBlobStorage
   | CustomJWTAuthIntegration;
+export type EnvironmentOptimizeFor = "COST" | "AVAILABILITY";
 export type GCPRegion =
   | "asia-east1"
   | "asia-east2"
@@ -312,7 +317,8 @@ export type GCPRegion =
 export type GatewayConfig =
   | RateLimitConfig
   | FallbackConfig
-  | LoadBalancingConfig;
+  | LoadBalancingConfig
+  | GuardrailsConfig;
 export type RateLimitUnit =
   | "requests_per_day"
   | "tokens_per_minute"
@@ -320,6 +326,9 @@ export type RateLimitUnit =
   | "tokens_per_day"
   | "requests_per_hour"
   | "tokens_per_hour";
+export type LoadBalancingRule =
+  | (WeightBasedLoadBalancingRule & {})
+  | (LatencyBasedLoadBalancingRule & {});
 export type GcpIntegrations =
   | GcpGcr
   | GcpGcs
@@ -329,9 +338,9 @@ export type GcpIntegrations =
   | GoogleModel;
 export type Input =
   | ProviderAccounts
-  | Cluster
-  | VirtualAccount
-  | Workspace
+  | ClusterManifest
+  | VirtualAccountManifest
+  | WorkspaceManifest
   | ProviderIntegrations
   | Service
   | AsyncService
@@ -347,14 +356,16 @@ export type Input =
   | RStudio
   | ApplicationSet
   | Intercept
-  | MLRepo
+  | MLRepoManifest
   | ModelVersion
   | ArtifactVersion
   | DataDirectory
   | GatewayConfig
-  | Team
-  | Environment
-  | Policy;
+  | TeamManifest
+  | EnvironmentManifest
+  | Policy
+  | AlertConfig
+  | TracingProject;
 export type ProviderAccounts =
   | AwsProviderAccount
   | AzureProviderAccount
@@ -382,8 +393,9 @@ export type ProviderAccounts =
   | AI21ProviderAccount
   | OllamaProviderAccount
   | SlackProviderAccount
-  | WebhookProviderAccount;
-export type TrueFoundryIntegrations = TrueFoundryDBSSM | TrueFoundryPublicModel;
+  | WebhookProviderAccount
+  | DatabricksProviderAccount;
+export type SlackIntegrations = SlackWebhookIntegration | SlackBotIntegration;
 export type ProviderIntegrations =
   | AwsIntegrations
   | GcpIntegrations
@@ -408,7 +420,9 @@ export type ProviderIntegrations =
   | OllamaIntegrations
   | OpenAIIntegrations
   | SlackIntegrations
-  | WebhookIntegrations;
+  | WebhookIntegrations
+  | DatabricksIntegrations;
+export type WorkflowEvent = "SUCCEEDED" | "FAILED" | "ABORTED" | "TIMED_OUT";
 /**
  * +docs=Describes the configuration for the service
  */
@@ -827,6 +841,182 @@ export interface BlobStorageReference {
     | "image/png"
     | "image/jpeg"
     | "application/x-directory";
+}
+export interface AlertConfig {
+  /**
+   * +label=Type
+   * +value=alert-config
+   */
+  type: "alert-config";
+  /**
+   * +label=Name
+   * +message=3 to 35 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"descriptionInline":true}
+   * +uiType=Hidden
+   */
+  name: string;
+  /**
+   * +label=Application FQN
+   * +uiType=Hidden
+   */
+  application_fqn: string;
+  /**
+   * +label=Notification Targets
+   * +usage=Configure one or more notification targets where alerts will be sent. Each target specifies a notification channel (email or slack).
+   * +uiProps={"descriptionInline":true}
+   * +sort=1
+   */
+  notification_targets: NotificationTarget[];
+  /**
+   * +label=Rules
+   * +usage=Define one or more alert rules that specify the conditions to monitor, when to trigger alerts, and how they should be handled.
+   * +uiProps={"descriptionInline":true}
+   * +uiType=Structs
+   */
+  rules: (PrometheusAlertRule | TrueFoundryManagedAlertRule)[];
+}
+/**
+ * +label=Email
+ */
+export interface Email {
+  /**
+   * +value=email
+   */
+  type: "email";
+  /**
+   * +label=Notification Channel
+   * +usage=Specify the notification channel to send alerts to
+   * +uiType=AlertNotificationChannel
+   * +uiProps={"integrationType":"notification-channel"}
+   * +sort=660
+   */
+  notification_channel: string;
+  /**
+   * +label=To Emails
+   * +usage=List of recipients' email addresses if the notification channel is Email.
+   * +docs=Specify the emails to send alerts to
+   * +sort=665
+   */
+  to_emails: string[];
+}
+/**
+ * +label=Slack Webhook
+ */
+export interface SlackWebhook {
+  /**
+   * +value=slack-webhook
+   */
+  type: "slack-webhook";
+  /**
+   * +label=Notification Channel
+   * +usage=Specify the notification channel to send alerts to
+   * +uiType=AlertNotificationChannel
+   * +uiProps={"integrationType":"notification-channel"}
+   * +sort=660
+   */
+  notification_channel: string;
+}
+export interface SlackBot {
+  /**
+   * +value=slack-bot
+   */
+  type: "slack-bot";
+  /**
+   * +label=Notification Channel
+   * +usage=Specify the notification channel to send alerts to
+   * +uiType=AlertNotificationChannel
+   * +uiProps={"integrationType":"notification-channel"}
+   * +sort=660
+   */
+  notification_channel: string;
+  /**
+   * +label=Slack Channel Names
+   * +usage=List of channels to send messages to.
+   * +message=3 to 81 lower case characters long alphanumeric word, may contain - or _ in between, must start with #
+   * +sort=665
+   */
+  channels: string[];
+}
+/**
+ * +label=Prometheus Alert Rule
+ */
+export interface PrometheusAlertRule {
+  /**
+   * +label=Type
+   * +value=prometheus-alert-rule
+   */
+  type: "prometheus-alert-rule";
+  /**
+   * +label=Name
+   * +usage=Enter a unique, descriptive name for your Prometheus alert rule. Choose a name that clearly indicates the condition being monitored. Please note that reserved alert names for TrueFoundry managed alerts are not allowed. For checking the list of reserved alert names, please refer to the documentation.
+   * +uiProps={"descriptionInline":true}
+   * +message=3 to 35 alphanumeric characters long, can contain - in between, cannot start with a number and cannot end with a -
+   * +sort=1
+   */
+  name: string;
+  /**
+   * +label=Expression
+   * +usage=Enter a valid PromQL expression that defines the condition for triggering this alert. The alert will fire when this expression evaluates to true for the duration specified in the duration to trigger alert field.
+   * +uiProps={"descriptionInline":true}
+   * +placeholder=sum(increase(container_cpu_cfs_throttled_periods_total{container="postgresql", namespace="prod-ws"}[5m])) by (container, namespace) / sum(increase(container_cpu_cfs_periods_total[5m])) by (container, namespace) > ( 25 / 100 )
+   * +sort=2
+   * +uiType=TextArea
+   */
+  expression: string;
+  /**
+   * +label=Duration to Trigger Alert
+   * +usage=Duration (in seconds) that the alert expression must be true for before triggering an alert notification. For example, if value is 60, the alert expression must be true for 60 seconds before triggering an alert.
+   * +uiProps={"descriptionInline":true}
+   * +placeholder=300
+   * +sort=3
+   */
+  for: number;
+  severity: AlertSeverity;
+  /**
+   * +label=Time to resolve
+   * +usage=Duration to keep alert firing after condition is no longer met. Helps prevent flapping alerts and false resolutions. Without this, alerts deactivate immediately when expression evaluates to false. For example, set to 300 seconds (5 minutes) to ensure the alert is in firing state for 5 minutes after the condition is no longer met before it is marked as resolved.Default it is 300s. Minimum value is 60s.
+   * +uiProps={"descriptionInline":true}
+   * +placeholder=300
+   * +sort=5
+   */
+  cooldown_period?: number;
+  /**
+   * +label=Description
+   * +usage=Description of the alert rule which will be displayed in the alert rule list. This can be used to provide more context about the alert rule.
+   * +uiProps={"descriptionInline":true}
+   * +placeholder=CPU throttled for more than 25% of the time in the last 5 minutes for
+   * +sort=6
+   */
+  description?: string;
+  /**
+   * +label=Notification Enabled
+   * +usage=When enabled, notifications will be sent to all configured target channels when the alert conditions are met.
+   * +uiProps={"descriptionInline":true}
+   * +sort=7
+   */
+  notification_enabled: boolean;
+}
+/**
+ * +label=TrueFoundry Managed Alert Rule
+ */
+export interface TrueFoundryManagedAlertRule {
+  /**
+   * +label=Type
+   * +value=tfy-managed-alert-rule
+   */
+  type: "tfy-managed-alert-rule";
+  /**
+   * +label=Name
+   * +usage=Specify the name of the managed alert rule. These are predefined alerts provided by TrueFoundry - please refer to the documentation for the complete list of available alert names and their purposes.
+   * +uiProps={"descriptionInline":true}
+   */
+  name: string;
+  /**
+   * +label=Notification Enabled
+   * +usage=When enabled, notifications will be sent to all configured target channels when the alert is triggered. Disable to keep the alert rule active but suppress notifications.
+   * +uiProps={"descriptionInline":true}
+   */
+  notification_enabled: boolean;
 }
 /**
  * +label=Anthropic Model
@@ -1487,12 +1677,6 @@ export interface Resources {
    */
   ephemeral_storage_limit: number;
   /**
-   * +label=GPU Count
-   * +usage=Count of GPUs to provide to the application
-   * Note the exact count and max count available for a given GPU type depends on cloud provider and cluster type.
-   */
-  gpu_count?: number;
-  /**
    * +label=Shared Memory Size (MB)
    * +usage=Define the shared memory requirements for your workload. Machine learning libraries like Pytorch can use Shared Memory
    * for inter-process communication. If you use this, we will mount a `tmpfs` backed volume at the `/dev/shm` directory.
@@ -1527,13 +1711,6 @@ export interface NodeSelector {
    * +value=node_selector
    */
   type: "node_selector";
-  /**
-   * +label=GPU Type
-   * +usage=Name of the Nvidia GPU. One of [P4, P100, V100, T4, A10G, A100_40GB, A100_80GB]
-   * One instance of the card contains the following amount of memory -
-   * P4: 8 GB, P100: 16 GB, V100: 16 GB, T4: 16 GB, A10G: 24 GB, A100_40GB: 40GB, A100_80GB: 80 GB
-   */
-  gpu_type?: string;
   /**
    * +label=Instance family
    * +usage=Instance family of the underlying machine to use. Multiple instance families can be supplied.
@@ -2621,29 +2798,31 @@ export interface JobAlert {
   /**
    * +label=Notification Channel
    * +usage=Specify the notification channel to send alerts to
-   * +uiType=IntegrationSelect
-   * +uiProps={"integrationType":"notification-channel"}
+   * +uiType=Hidden
    * +sort=660
    */
-  notification_channel: string;
+  notification_channel?: string;
   /**
    * +label=To Emails
    * +usage=List of recipients' email addresses if the notification channel is Email.
    * +docs=Specify the emails to send alerts to
+   * +uiType=Hidden
    * +sort=665
    */
   to_emails?: string[];
+  notification_target?: NotificationTarget;
+  /**
+   * +label=Events
+   * +usage=Specify the events to send alerts for, it should be one of the following: START, SUCCEEDED, FAILED, TERMINATED
+   * +uiType=Hidden
+   */
+  events?: JobEvent[];
   /**
    * +label=On Start
    * +usage=Send an alert when the job starts
    * +sort=670
    */
   on_start?: boolean;
-  /**
-   * +label=On Completion
-   * +usage=Send an alert when the job completes
-   * +sort=680
-   */
   on_completion?: boolean;
   /**
    * +label=On Failure
@@ -3212,6 +3391,7 @@ export interface AzureKeyAuth {
   type: "api-key";
   /**
    * +sort=90
+   * +uiType=Password
    */
   api_key: string;
 }
@@ -3428,6 +3608,67 @@ export interface AzureContainerRegistry {
   authorized_subjects?: string[];
 }
 /**
+ * +label=Azure AI Foundry Model
+ */
+export interface AzureFoundryModel {
+  /**
+   * +value=integration/model/azure/ai-foundry
+   */
+  type: "integration/model/azure/ai-foundry";
+  /**
+   * +label=Display Name
+   * +usage=Name to identify this Azure AI Foundry model
+   * +sort=1
+   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +sort=2
+   * +label=Model Name
+   * +usage=This is the Model Name on Azure
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +usage=Types of models supported by this Azure AI Foundry deployment
+   * +sort=200
+   */
+  model_types: ModelType[];
+  /**
+   * +sort=300
+   * +label=Azure Endpoint
+   * +usage=Azure Foundry endpoint
+   */
+  azure_endpoint: string;
+  auth_data?: AzureKeyAuth;
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+export interface PerThousandTokensCostMetric {
+  /**
+   * +value=per_1000_tokens
+   */
+  metric: string;
+  value: InputOutputBasedCostMetricValue;
+}
+export interface InputOutputBasedCostMetricValue {
+  input: number;
+  output: number;
+}
+export interface PerThousandEmbeddingTokensCostMetric {
+  /**
+   * +value=per_1000_embedding_tokens
+   */
+  metric: string;
+  value: number;
+}
+/**
  * +label=Azure OpenAI Model
  * +icon=azure
  */
@@ -3472,24 +3713,6 @@ export interface AzureOpenAIModel {
    * +uiType=AuthorizedSubjects
    */
   authorized_subjects?: string[];
-}
-export interface PerThousandTokensCostMetric {
-  /**
-   * +value=per_1000_tokens
-   */
-  metric: string;
-  value: InputOutputBasedCostMetricValue;
-}
-export interface InputOutputBasedCostMetricValue {
-  input: number;
-  output: number;
-}
-export interface PerThousandEmbeddingTokensCostMetric {
-  /**
-   * +value=per_1000_embedding_tokens
-   */
-  metric: string;
-  value: number;
 }
 /**
  * +label=Azure Vault
@@ -3667,7 +3890,7 @@ export interface BitbucketProviderAccount {
    */
   integrations: BitbucketIntegration[];
 }
-export interface Cluster {
+export interface ClusterManifest {
   /**
    * +value=cluster
    */
@@ -4039,6 +4262,13 @@ export interface CustomBlobStorage {
    */
   storage_root: string;
   auth_data: CustomBasicAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=400
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
 }
 /**
  * +label=Custom Helm Repo
@@ -4116,7 +4346,7 @@ export interface CustomModel {
    * +message=enter valid https/http URL that should not end with trailing slash
    */
   url: string;
-  model_server: "vllm-openai" | "tei" | "infinity";
+  model_server: "vllm-openai" | "tei" | "infinity" | "nemo-retriever";
   /**
    * +uiType=Hidden
    */
@@ -4240,6 +4470,13 @@ export interface CustomJWTAuthIntegration {
    */
   jwks_uri: string;
   login_provider?: OAuth2LoginProvider;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=500
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
 }
 /**
  * +label=OAuth2 Client Configuration
@@ -4352,6 +4589,109 @@ export interface DataDirectory {
    * +uiType=Group
    */
   source: TrueFoundryManagedSource | ExternalBlobStorageSource;
+}
+/**
+ * +label=Databricks API Key Auth
+ */
+export interface DatabricksApiKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +sort=100
+   * +uiType=Password
+   */
+  api_key: string;
+}
+/**
+ * +label=Databricks Model
+ * +icon=databricks
+ */
+export interface DatabricksIntegrations {
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +sort=2
+   */
+  model_id: string;
+  /**
+   * +value=integration/model/databricks
+   */
+  type: "integration/model/databricks";
+  /**
+   * +usage=Specify the type of the model
+   * +sort=4
+   * +uiType=Select
+   */
+  model_types: ModelType[];
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Databricks Model
+ * +icon=databricks
+ */
+export interface DatabricksModel {
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +sort=2
+   */
+  model_id: string;
+  /**
+   * +value=integration/model/databricks
+   */
+  type: "integration/model/databricks";
+  /**
+   * +usage=Specify the type of the model
+   * +sort=4
+   * +uiType=Select
+   */
+  model_types: ModelType[];
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Databricks
+ * +icon=databricks
+ */
+export interface DatabricksProviderAccount {
+  /**
+   * +value=provider-account/databricks
+   */
+  type: "provider-account/databricks";
+  /**
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: DatabricksApiKeyAuth;
+  /**
+   * +label=Base URL
+   */
+  base_url: string;
+  /**
+   * +uiType=IntegrationsGroup
+   */
+  integrations: DatabricksIntegrations[];
 }
 /**
  * +label=Deepinfra Model
@@ -4585,7 +4925,13 @@ export interface Endpoint {
    */
   path?: string;
 }
-export interface Environment {
+export interface EnvironmentColor {
+  colorHex?: string;
+  backgroundColorHex?: string;
+  color?: string;
+  backgroundColor?: string;
+}
+export interface EnvironmentManifest {
   /**
    * +value=environment
    */
@@ -4596,13 +4942,7 @@ export interface Environment {
    * +usage=Environment Name
    */
   name: string;
-  /**
-   * +sort=300
-   * +uiType=MultiSelectPills
-   * +label=Environment Color
-   * +uiProps={"hideRadioIcon":true}
-   */
-  color: {};
+  color: EnvironmentColor;
   /**
    * +sort=400
    * +label=Environment Type
@@ -4611,13 +4951,11 @@ export interface Environment {
    * +uiProps={"hideRadioIcon":true}
    */
   isProduction: boolean;
-  /**
-   * +sort=500
-   * +label=Optimize Environment For
-   * +uiType=MultiSelectPills
-   * +uiProps={"hideRadioIcon":true}
-   */
-  optimizeFor: "COST" | "AVAILABILITY";
+  optimizeFor: EnvironmentOptimizeFor;
+}
+export interface FailureToleranceConfig {
+  allowed_failures_per_minute: number;
+  cooldown_period_minutes: number;
 }
 export interface FallbackConfig {
   name: string;
@@ -4627,7 +4965,7 @@ export interface FallbackConfig {
 export interface FallbackRule {
   id: string;
   when: FallbackWhen;
-  fallback_models: string[];
+  fallback_models: FallbackModel[];
 }
 export interface FallbackWhen {
   subjects?: string[];
@@ -4636,6 +4974,10 @@ export interface FallbackWhen {
     [k: string]: string;
   };
   response_status_codes: number[];
+}
+export interface FallbackModel {
+  target: string;
+  override_params?: {};
 }
 /**
  * +label=FastAI
@@ -4846,12 +5188,23 @@ export interface RateLimitWhen {
 export interface LoadBalancingConfig {
   name: string;
   type: "gateway-load-balancing-config";
+  model_configs?: ModelConfig[];
   rules: LoadBalancingRule[];
 }
-export interface LoadBalancingRule {
+export interface ModelConfig {
+  model: string;
+  usage_limits?: UsageLimits;
+  failure_tolerance?: FailureToleranceConfig;
+}
+export interface UsageLimits {
+  tokens_per_minute?: number;
+  requests_per_minute?: number;
+}
+export interface WeightBasedLoadBalancingRule {
   id: string;
   when: LoadBalancingWhen;
   load_balance_targets: LoadBalanceTarget[];
+  type: "weight-based-routing";
 }
 export interface LoadBalancingWhen {
   subjects?: string[];
@@ -4863,6 +5216,88 @@ export interface LoadBalancingWhen {
 export interface LoadBalanceTarget {
   target: string;
   weight: number;
+  override_params?: {};
+}
+export interface LatencyBasedLoadBalancingRule {
+  id: string;
+  when: LoadBalancingWhen;
+  load_balance_targets: LatencyBasedLoadBalanceTarget[];
+  type: "latency-based-routing";
+  config: LatencyBasedRoutingConfig;
+}
+export interface LatencyBasedLoadBalanceTarget {
+  target: string;
+  override_params?: {};
+}
+export interface LatencyBasedRoutingConfig {
+  lookback_window_minutes?: number;
+  allowed_latency_overhead_percentage?: number;
+}
+export interface GuardrailsConfig {
+  /**
+   * +usage=Name of the guardrails configuration
+   */
+  name: string;
+  /**
+   * +value=gateway-guardrails-config
+   */
+  type: "gateway-guardrails-config";
+  /**
+   * +usage=List of guardrail rules
+   */
+  rules: GuardrailsRule[];
+  /**
+   * +usage=URL of the guardrails service
+   */
+  guardrails_service_url: string;
+}
+export interface GuardrailsRule {
+  /**
+   * +usage=Unique identifier for the rule
+   */
+  id: string;
+  when: GuardrailsWhen;
+  /**
+   * +usage=Guardrails to apply to the input
+   */
+  input_guardrails: GuardrailConfig[];
+  /**
+   * +usage=Guardrails to apply to the output
+   */
+  output_guardrails: GuardrailConfig[];
+}
+export interface GuardrailsWhen {
+  /**
+   * +usage=List of subjects that this rule applies to
+   */
+  subjects?: string[];
+  /**
+   * +usage=List of models that this rule applies to
+   */
+  models?: string[];
+  /**
+   * +usage=Metadata key-value pairs that this rule applies to
+   */
+  metadata?: {
+    [k: string]: string;
+  };
+}
+export interface GuardrailConfig {
+  /**
+   * +usage=Type of the guardrail
+   */
+  type: string;
+  /**
+   * +usage=Action to perform with the guardrail
+   */
+  action: "validate" | "transform";
+  options: GuardrailsOptions;
+}
+export interface GuardrailsOptions {
+  /**
+   * Generic options structure that can be extended based on guardrail type
+   */
+  [k: string]: {};
 }
 /**
  * +label=GCP API Key Auth
@@ -5577,7 +6012,7 @@ export interface TrueFoundryProviderAccount {
  * +label=TrueFoundry DBSSM
  * +icon=truefoundry
  */
-export interface TrueFoundryDBSSM {
+export interface TrueFoundryIntegrations {
   /**
    * +value=integration/secret-store/truefoundry/db
    */
@@ -5589,36 +6024,6 @@ export interface TrueFoundryDBSSM {
    * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
- * +label=TrueFoundry Model
- * +icon=truefoundry
- */
-export interface TrueFoundryPublicModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  prompt_format_string?: string;
-  /**
-   * +value=integration/model/truefoundry
-   */
-  type: "integration/model/truefoundry";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -6104,7 +6509,7 @@ export interface SlackProviderAccount {
    */
   type: "provider-account/slack";
   /**
-   * +uiProps={"disableEdit":true}
+   * +uiProps={"disableEdit":false}
    * +label=Name
    * +usage=The name of the provider account.
    * +sort=100
@@ -6123,15 +6528,15 @@ export interface SlackProviderAccount {
  * +label=Slack Webhook Integration
  * +icon=https://assets.production.truefoundry.com/slack.svg
  */
-export interface SlackIntegrations {
+export interface SlackWebhookIntegration {
   /**
    * +value=integration/notification-channel/slack-webhook
    */
   type: "integration/notification-channel/slack-webhook";
   /**
    * +label=Display Name
-   * +uiProps={"disableEdit":true}
    * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +uiProps={"disableEdit":false}
    * +sort=100
    * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    */
@@ -6156,6 +6561,44 @@ export interface SlackWebhookAuth {
    * +sort=100
    */
   webhook_url: string;
+}
+/**
+ * +label=Slack Bot Integration
+ * +icon=https://assets.production.truefoundry.com/slack.svg
+ */
+export interface SlackBotIntegration {
+  /**
+   * +value=integration/notification-channel/slack-bot
+   */
+  type: "integration/notification-channel/slack-bot";
+  /**
+   * +label=Display Name
+   * +uiProps={"disableEdit":false}
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=100
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  auth_data: SlackBotAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=10005
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+export interface SlackBotAuth {
+  /**
+   * +value=auth/slack-bot
+   */
+  type: "slack-bot";
+  /**
+   * +label=Bot Token
+   * +usage=The bot token for the slack bot to send messages to the channels. This bot should have the following permissions: chat:write, chat:write.public
+   * +sort=100
+   */
+  bot_token: string;
 }
 /**
  * +label=Webhook Provider Account
@@ -6257,7 +6700,7 @@ export interface WebhookBearerAuth {
    */
   prefix: string;
 }
-export interface VirtualAccount {
+export interface VirtualAccountManifest {
   /**
    * +label=Name
    * +sort=1
@@ -6301,7 +6744,7 @@ export interface Permissions {
    */
   role_id: string;
 }
-export interface Workspace {
+export interface WorkspaceManifest {
   /**
    * +value=workspace
    */
@@ -6383,6 +6826,36 @@ export interface Workflow {
    * +label=Flyte Entities
    */
   flyte_entities?: (FlyteTask | FlyteWorkflow | FlyteLaunchPlan)[];
+  /**
+   * +label=Alerts
+   */
+  alerts?: WorkflowAlert[];
+}
+/**
+ * +docs=Describes the configuration for the workflow alerts
+ * +label=Alert
+ */
+export interface WorkflowAlert {
+  notification_target?: NotificationTarget;
+  /**
+   * +label=Alert Events
+   * +usage=Specify the events to send alerts for, it should be one of the following: SUCCEEDED, FAILED, ABORTED, TIMED_OUT
+   * +sort=670
+   * +uiType=Hidden
+   */
+  events?: WorkflowEvent[];
+  /**
+   * +label=On Completion
+   * +usage=Send an alert when the job completes
+   * +sort=680
+   */
+  on_completion?: boolean;
+  /**
+   * +label=On Failure
+   * +usage=Send an alert when the job fails
+   * +sort=690
+   */
+  on_failure?: boolean;
 }
 export interface SparkJob {
   /**
@@ -6397,25 +6870,15 @@ export interface SparkJob {
    * +sort=2
    */
   name: string;
-  image: Image;
+  image: SparkImage;
   /**
-   * +label=Spark Version
-   * +usage=Spark version should match the spark version installed in the image.
-   * +sort=2000
+   * +label=Entrypoint
+   * +sort=1000
    */
-  spark_version: string;
-  /**
-   * +label=Main Application File
-   * +usage=The main application file to be executed by the spark job.
-   * +sort=3000
-   */
-  main_application_file: string;
-  /**
-   * +label=Arguments
-   * +usage=Arguments to be passed to the main application file.
-   * +sort=4000
-   */
-  arguments?: string;
+  entrypoint:
+    | SparkJobPythonEntrypoint
+    | SparkJobScalaEntrypoint
+    | SparkJobJavaEntrypoint;
   driver_config: SparkDriverConfig;
   executor_config: SparkExecutorConfig;
   /**
@@ -6431,7 +6894,7 @@ export interface SparkJob {
    * +icon=fa-gear:#68BBE3
    * +sort=21500
    */
-  conf?: {} | null;
+  spark_conf?: {} | null;
   /**
    * +label=Mounts
    * +usage=Configure volumes to be mounted to driver and executors. [Docs](https://docs.truefoundry.com/docs/mounting-volumes-job)
@@ -6457,6 +6920,127 @@ export interface SparkJob {
    * +uiType=Hidden
    */
   workspace_fqn?: string;
+}
+/**
+ * +docs=Describes that we are using a pre-built image stored in a Docker Image registry
+ * +label=Docker Image (Deploy an existing image)
+ * +icon=fa-brands fa-docker:#0db7ed
+ */
+export interface SparkImage {
+  /**
+   * +value=image
+   */
+  type: "image";
+  /**
+   * --- Spark Specific Field ---
+   * +label=Spark Version
+   * +usage=Spark version should match the spark version installed in the image.
+   * +sort=1000
+   */
+  spark_version: string;
+  /**
+   * +label=Image URI
+   * +usage=The image URI. Specify the name of the image and the tag.
+   * If the image is in Dockerhub, you can skip registry-url (for e.g. `tensorflow/tensorflow`).
+   * You can use an image from a private registry using Advanced fields
+   * +placeholder=registry-url/account/image:version (e.g. docker.io/tensorflow/tensorflow)
+   * +sort=1001
+   */
+  image_uri: string;
+  /**
+   * +docs=FQN of the container registry. You can the FQN of your desired container registry (or add one)
+   * in the  Integrations page[Integrations](https://app.truefoundry.tech/integrations?tab=docker-registry) page
+   * +label=Docker Registry
+   * +usage=FQN of the container registry. If you can't find your registry here,
+   * add it through the [Integrations](/integrations?tab=docker-registry) page
+   * +sort=1002
+   */
+  docker_registry?: string;
+}
+/**
+ * +label=python
+ */
+export interface SparkJobPythonEntrypoint {
+  /**
+   * +value=python
+   */
+  type: "python";
+  /**
+   * +label=Main Application File
+   * +usage=The main application file to be executed by the spark job.
+   * +message=Filename should have .py extension
+   * +sort=5
+   * +placeholder=For example: local:///path/to/file.py, s3:///bucket/path/to/file.py, etc.
+   */
+  main_application_file: string;
+  /**
+   * +label=Arguments
+   * +usage=Arguments to be passed to the main application file.
+   * +sort=6
+   */
+  arguments?: string;
+}
+/**
+ * +label=scala
+ */
+export interface SparkJobScalaEntrypoint {
+  /**
+   * +value=scala
+   */
+  type: "scala";
+  /**
+   * +label=Main Application File
+   * +usage=The main application file to be executed by the spark job.
+   * +message=Filename should have .jar extension
+   * +sort=5
+   * +placeholder=For example: local:///path/to/file.jar, s3:///bucket/path/to/file.jar, etc.
+   */
+  main_application_file: string;
+  /**
+   * +label=Main Class
+   * +usage=The main class to be executed by the spark job.
+   * +sort=6
+   * +required=true
+   * +message=The main class must be a valid Java class name.
+   */
+  main_class: string;
+  /**
+   * +label=Arguments
+   * +usage=Arguments to be passed to the main application file.
+   * +sort=7
+   */
+  arguments?: string;
+}
+/**
+ * +label=java
+ */
+export interface SparkJobJavaEntrypoint {
+  /**
+   * +value=java
+   */
+  type: "java";
+  /**
+   * +label=Main Application File
+   * +usage=The main application file to be executed by the spark job.
+   * +message=Filename should have .jar extension
+   * +sort=5
+   * +placeholder=For example: local:///path/to/file.jar, s3:///bucket/path/to/file.jar, etc.
+   */
+  main_application_file: string;
+  /**
+   * +label=Main Class
+   * +usage=The main class to be executed by the spark job.
+   * +sort=6
+   * +required=true
+   * +message=The main class must be a valid Java class name.
+   */
+  main_class: string;
+  /**
+   * +label=Arguments
+   * +usage=Arguments to be passed to the main application file.
+   * +sort=7
+   */
+  arguments?: string;
 }
 /**
  * +label=Driver Config
@@ -6626,7 +7210,7 @@ export interface MirrorAction {
  * +label=MLRepo
  * +usage=MLRepo is a repository ML training runs that log params, metrics, plots, images and versioned entities like artifacts, models, prompts, tools, agents
  */
-export interface MLRepo {
+export interface MLRepoManifest {
   /**
    * +value=ml-repo
    */
@@ -6905,7 +7489,7 @@ export interface ModelVersionEnvironment {
    */
   pip_packages?: string[];
 }
-export interface Team {
+export interface TeamManifest {
   /**
    * +value=volume
    */
@@ -6946,7 +7530,7 @@ export interface Policy {
   /**
    * +label=Mode
    * +usage=Mode of the policy: `Audit` logs all policy evaluations without blocking deployments, `Enforce` blocks deployments if the policy fails, and `Disabled` deactivates the policy.
-   * +uiType=Radio
+   * +uiType=MultiSelectPills
    * +sort=6
    */
   mode: "audit" | "enforce" | "disabled";
@@ -6998,6 +7582,7 @@ export interface PolicyMutationOperation {
    * +usage=Defines the execution sequence for mutation policies. Lower values execute first.
    * +sort=5
    * +message=Order must be a positive integer less than or equal to 100
+   * +uiProps={"descriptionInline":true}
    */
   order: number;
 }
@@ -7034,6 +7619,24 @@ export interface PolicyFilters {
    * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   env_names?: string[];
+}
+export interface TracingProject {
+  /**
+   * +value=tracing-project
+   */
+  type: "tracing-project";
+  /**
+   * +label=Name
+   * +usage=Name of the tracing project
+   * +message=The name should start with lowercase alphabets  and can contain alphanumeric and can include '-' in between
+   */
+  name: string;
+  /**
+   * +label=ML Repo
+   * +usage=Name of the ML Repo
+   * +uiType=Hidden
+   */
+  ml_repo?: string;
 }
 /**
  * +label=Jfrog Artifacts Registry
@@ -7287,32 +7890,6 @@ export interface QuayArtifactsRegistry {
   authorized_subjects?: string[];
 }
 /**
- * +label=Slack Webhook Integration
- * +icon=https://assets.production.truefoundry.com/slack.svg
- */
-export interface SlackWebhookIntegration {
-  /**
-   * +value=integration/notification-channel/slack-webhook
-   */
-  type: "integration/notification-channel/slack-webhook";
-  /**
-   * +label=Display Name
-   * +uiProps={"disableEdit":true}
-   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
-   * +sort=100
-   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  auth_data: SlackWebhookAuth;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=10005
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
  * +label=TTL
  * +icon=docker
  */
@@ -7365,6 +7942,30 @@ export interface TogetherAIModel {
    * +sort=4
    */
   model_types: ModelType[];
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=TrueFoundry DBSSM
+ * +icon=truefoundry
+ */
+export interface TrueFoundryDBSSM {
+  /**
+   * +value=integration/secret-store/truefoundry/db
+   */
+  type: "integration/secret-store/truefoundry/db";
+  /**
+   * +label=Display Name
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=100
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.

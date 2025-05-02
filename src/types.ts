@@ -1,4 +1,4 @@
-import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow, Environment } from './models';
+import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow, EnvironmentManifest } from './models';
 
 export declare class V1OwnerReference {
   'apiVersion': string;
@@ -85,6 +85,7 @@ export interface KubernetesObjectWithSpec extends KubernetesObject {
 
 export interface ValidationInput {
   manifest: ApplicationManifest;
+  flyteTasks?: Record<string,any>;
   context: ValidationContext;
 }
 
@@ -105,7 +106,7 @@ export interface ValidationContext {
   workspaceName: string;
   clusterName: string;
   environment?: {
-    manifest: Environment;
+    manifest: EnvironmentManifest;
   };
   createdByUser: Subject;
   activeDeployment?: {
