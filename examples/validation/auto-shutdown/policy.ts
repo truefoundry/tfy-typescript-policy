@@ -10,7 +10,7 @@ export function validate(validationInput: ValidationInput): void {
   if (!isProduction) {
     if (!manifest.auto_shutdown) {
       throw new ValidationError(
-        'Auto shutdown is required for the dev environment.'
+        'Auto shutdown is required for dev environments.'
       );
     }
   }
