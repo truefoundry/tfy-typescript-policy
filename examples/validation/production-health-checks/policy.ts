@@ -5,13 +5,10 @@ export function validate(validationInput: ValidationInput): void {
   const environment = context.environment;
   const isProduction = environment?.manifest.isProduction;
 
-  if (manifest.type !== 'service') return;
-
-  if (!isProduction) {
-    if (!manifest.auto_shutdown) {
-      throw new ValidationError(
-        'Auto shutdown is required for dev environments.'
-      );
-    }
+  if (!isProduction) return;
+  if (!manifest.liveness_probe || !manifest.readiness_probe) {
+    throw new ValidationError(
+      'Liveness and Readiness probes are required for the dev environment.'
+    );
   }
-}
+} 
