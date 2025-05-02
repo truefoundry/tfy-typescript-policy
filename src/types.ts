@@ -85,6 +85,7 @@ export interface KubernetesObjectWithSpec extends KubernetesObject {
 
 export interface ValidationInput {
   manifest: Manifest;
+  flyteTasks?: Record<string, any>;
   context: ValidationContext;
 }
 export interface ValidationContext {
