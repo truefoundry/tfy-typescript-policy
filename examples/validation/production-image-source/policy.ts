@@ -1,3 +1,9 @@
+/**
+ * Production Image Source Validation Policy
+ * 
+ * This policy enforces that production deployments must use either build type or image type with git/remote source.
+ */
+
 import { ValidationInput, ValidationError } from '@src/types';
 
 export function validate(validationInput: ValidationInput): void {

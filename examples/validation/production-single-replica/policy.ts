@@ -1,3 +1,9 @@
+/**
+ * Production Single-Replica Validation Policy
+ * 
+ * This policy enforces that services in production with one replica must use on-demand capacity type.
+ */
+
 import { ValidationInput, ValidationError } from '@src/types';
 
 export function validate(validationInput: ValidationInput): void {
