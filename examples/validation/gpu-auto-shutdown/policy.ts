@@ -1,3 +1,9 @@
+/**
+ * GPU Auto-Shutdown Validation Policy
+ * 
+ * This policy enforces that non-production GPU deployments must have auto shutdown enabled.
+ */
+
 import { ValidationInput, ValidationError } from '@src/types';
 
 export function validate(validationInput: ValidationInput): void {
@@ -5,13 +11,13 @@ export function validate(validationInput: ValidationInput): void {
   const environment = context.environment;
   const isProduction = environment?.manifest.isProduction;
 
+  if (isProduction) return;
   if (manifest.type !== 'service') return;
-
-  if (!isProduction) {
+  if (manifest.resources?.devices?.[0].type == "nvidia_gpu") {
     if (!manifest.auto_shutdown) {
       throw new ValidationError(
-        'Auto shutdown is required for the dev environment.'
+        'Auto shutdown is required for GPU services.'
       );
     }
   }
-}
+} 
