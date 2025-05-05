@@ -1,4 +1,4 @@
-import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow } from './models';
+import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow, EnvironmentManifest } from './models';
 
 export declare class V1OwnerReference {
   'apiVersion': string;
@@ -84,17 +84,37 @@ export interface KubernetesObjectWithSpec extends KubernetesObject {
 }
 
 export interface ValidationInput {
-  manifest: Manifest;
+  manifest: ApplicationManifest;
+  flyteTasks?: Record<string,any>;
   context: ValidationContext;
 }
+
+export enum SubjectType {
+  user = 'user',
+  team = 'team',
+  serviceaccount = 'serviceaccount',
+}
+export interface Subject {
+  subjectId: string;
+  subjectType: SubjectType;
+  subjectSlug?: string;
+  subjectDisplayName?: string;
+}
+
 export interface ValidationContext {
   entityType: PolicyEntityTypes;
   workspaceName: string;
   clusterName: string;
-  envName: string;
+  environment?: {
+    manifest: EnvironmentManifest;
+  };
+  createdByUser: Subject;
+  activeDeployment?: {
+    manifest: object;
+  };
 }
 
-export type Manifest = Service | Job | Notebook | SSHServer | Workflow;
+export type ApplicationManifest = Service | Job | Notebook | SSHServer | Workflow;
 
 export interface MutationInput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];
@@ -107,12 +127,8 @@ export interface MutationOutput {
   flyteTasks?: Record<string,any>;
 }
 
-export interface MutationContext {
-  entityType: PolicyEntityTypes;
-  inputManifest: Manifest;
-  workspaceName: string;
-  clusterName: string;
-  envName: string;
+export interface MutationContext extends ValidationContext {
+  inputManifest: ApplicationManifest;
 }
 
 export class ValidationError extends Error {

@@ -1,10 +1,25 @@
 import { Service } from './src/models';
 import { validate } from './src/policy';
-import { ValidationContext } from './src/types';
+import { SubjectType, ValidationContext } from './src/types';
 
 const dummyValidationContext: ValidationContext = {
   entityType: 'service',
-  envName: 'dev',
+  environment: {
+    manifest: {
+      type: 'environment',
+      name: 'dev',
+      color: '#000000',
+      isProduction: false,
+      optimizeFor: 'COST'
+    }
+  },
+  activeDeployment: undefined,
+  createdByUser: {
+    "subjectId":"truefoundry",
+    "subjectSlug": "truefoundry",
+    "subjectType": SubjectType.serviceaccount,
+    "subjectDisplayName": "truefoundry"
+  },
   clusterName: 'cluster',
   workspaceName: 'workspace'
 };
@@ -44,8 +59,8 @@ const validationInput = {
 }
 
 try {
-    const validatedService = validate(validationInput); // will throw error that auto_shutdown wait_time should be less than 300 seconds for the dev environment
-    console.log(validatedService);
+    validate(validationInput); // will throw error that auto_shutdown wait_time should be less than 300 seconds for the dev environment
+    console.log(`Validation successful for ${githubService.name}`);
 } catch (error) {
     console.error(error);
 }
