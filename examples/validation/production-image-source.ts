@@ -11,9 +11,13 @@ export function validate(validationInput: ValidationInput): void {
   const environment = context.environment;
   const isProduction = environment?.manifest.isProduction;
 
+  // if the environment is not production return
   if (!isProduction) return;
+
+  // if the application is not a service return
   if (manifest.type !== 'service') return;
 
+  // if the image type is build and the build source local or remote throw an error
   const imageType = manifest.image?.type;
   if (imageType === 'build' && ['local', 'remote'].includes(manifest.image?.build_source?.type)) {
     throw new ValidationError(

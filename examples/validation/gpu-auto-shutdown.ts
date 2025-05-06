@@ -11,13 +11,21 @@ export function validate(validationInput: ValidationInput): void {
   const environment = context.environment;
   const isProduction = environment?.manifest.isProduction;
 
+  // if the environment is production return
   if (isProduction) return;
+
+  // if the application is not a service return
   if (manifest.type !== 'service') return;
-  if (manifest.resources?.devices?.[0].type == "nvidia_gpu") {
-    if (!manifest.auto_shutdown) {
-      throw new ValidationError(
-        'Auto shutdown is required for GPU services. See: https://docs.truefoundry.com/docs/scaling-and-autoscaling#auto-shutdown'
-      );
-    }
+
+  const hasGpu = manifest.resources?.devices?.[0].type === "nvidia_gpu"
+
+  // if the service does not have a GPU return
+  if(!hasGpu) return;
+
+  // if auto shutdown is not enabled throw an error
+  if (!manifest.auto_shutdown) {
+    throw new ValidationError(
+      'Auto shutdown is required for non-production GPU services. See: https://docs.truefoundry.com/docs/scaling-and-autoscaling#auto-shutdown'
+    );
   }
 } 
