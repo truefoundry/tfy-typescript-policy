@@ -1,7 +1,7 @@
 /**
- * Production Single Replica Validation Policy
+ * Production Single-Replica Validation Policy
  * 
- * This policy enforces that production services must have at least one replica configured
+ * This policy enforces that services in production with one replica must use on-demand capacity type.
  */
 
 import { ValidationInput, ValidationError } from '@src/types';
@@ -12,10 +12,15 @@ export function validate(validationInput: ValidationInput): void {
   const isProduction = environment?.manifest.isProduction;
 
   if (!isProduction) return;
+
   if (manifest.type !== 'service') return;
-  if (!manifest.replicas || manifest.replicas < 1) {
-    throw new ValidationError(
-      'Production services must have at least one replica configured. See: https://docs.truefoundry.com/docs/update-rollback-promote-your-service'
-    );
+
+  const replicas = manifest.replicas || 1;
+
+  // Check if service has only one replica
+  if (replicas === 1) {
+    if(manifest?.resources?.node?.type === 'node_selector' && manifest?.resources?.node.capacity_type !== 'on_demand') {
+      throw new ValidationError('Service needs to be set to on-demand when there is only one replica. See: https://docs.truefoundry.com/docs/resources#choosing-between-spot-and-on-demand-instances');
+    }
   }
 } 
