@@ -1,7 +1,7 @@
 /**
- * Production Health Checks Validation Policy
+ * Production Single Replica Validation Policy
  * 
- * This policy enforces that all production services must have both liveness and readiness probes configured
+ * This policy enforces that production services must have at least one replica configured
  */
 
 import { ValidationInput, ValidationError } from '@src/types';
@@ -13,9 +13,9 @@ export function validate(validationInput: ValidationInput): void {
 
   if (!isProduction) return;
   if (manifest.type !== 'service') return;
-  if (!manifest.liveness_probe || !manifest.readiness_probe) {
+  if (!manifest.replicas || manifest.replicas < 1) {
     throw new ValidationError(
-      'Liveness and Readiness probes are required for production services.'
+      'Production services must have at least one replica configured. See: https://docs.truefoundry.com/docs/update-rollback-promote-your-service'
     );
   }
 } 

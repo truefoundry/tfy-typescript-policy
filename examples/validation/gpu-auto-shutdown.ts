@@ -16,7 +16,7 @@ export function validate(validationInput: ValidationInput): void {
   if (manifest.resources?.devices?.[0].type == "nvidia_gpu") {
     if (!manifest.auto_shutdown) {
       throw new ValidationError(
-        'Auto shutdown is required for GPU services.'
+        'Auto shutdown is required for GPU services. See: https://docs.truefoundry.com/docs/scaling-and-autoscaling#auto-shutdown'
       );
     }
   }
