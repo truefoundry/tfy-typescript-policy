@@ -5,14 +5,14 @@
  * It ensures all container images are pulled from a private registry by replacing
  * public registry references with private ones.
  * 
- * Image pull secrets can be added  to pull from the private registry.
+ * Image pull secrets can be added to pull from the private registry.
  * 
  * For example:
  * - Input:  docker.io/library/nginx:latest
  * - Output: tfy.jfrog.io/library/nginx:latest
  */
 
-import { MutationInput, MutationOutput } from '@src/types';
+import { MutationInput, MutationOutput } from '../../src/types';
 
 /**
  * Registry mapping configuration
@@ -60,6 +60,36 @@ function replaceRegistryPrefix(sourceImageURI: string): DestinationImageDetails 
   };
 }
 
+/**
+ * Mutates container images and collects required secrets
+ * Handles both regular containers and workflow template containers
+ */
+function mutateContainerImages(containers: any[] | undefined, secretsToAdd: Set<string>): void {
+  if (!containers) return;
+
+  for (const container of containers) {
+    // Skip if no image to process
+    if (!container?.image) continue;
+
+    const destinationImageDetails = replaceRegistryPrefix(container.image);
+    if (destinationImageDetails) {
+      container.image = destinationImageDetails.destinationImageURI;
+      if (destinationImageDetails.imagePullSecretName) {
+        secretsToAdd.add(destinationImageDetails.imagePullSecretName);
+      }
+    }
+  }
+}
+
+/**
+ * Applies image pull secrets to a spec
+ */
+function applySecrets(spec: any, secretsToAdd: Set<string>): void {
+  if (secretsToAdd.size > 0) {
+    spec.imagePullSecrets = Array.from(secretsToAdd).map(name => ({ name }));
+  }
+}
+
 export function mutate(mutationInput: MutationInput): MutationOutput {
   const { generatedK8sManifests, flyteTasks } = mutationInput;
   const secretsToAdd = new Set<string>();
@@ -72,62 +102,24 @@ export function mutate(mutationInput: MutationInput): MutationOutput {
         const containers = manifest.spec?.template?.spec?.containers;
         const initContainers = manifest.spec?.template?.spec?.initContainers;
 
-        // Replace the registry prefix for main containers
-        if (containers) {
-          for (const container of containers) {
-            const destinationImageDetails = replaceRegistryPrefix(container.image);
-            if (destinationImageDetails) {
-              container.image = destinationImageDetails.destinationImageURI;
-              if (destinationImageDetails.imagePullSecretName) {
-                // gather all the secrets to add
-                secretsToAdd.add(destinationImageDetails.imagePullSecretName);
-              }
-            }
-          }
-        }
-
-        // Replace the registry prefix for init containers
-        if (initContainers) {
-          for (const container of initContainers) {
-            const destinationImageDetails = replaceRegistryPrefix(container.image);
-            if (destinationImageDetails) {
-              container.image = destinationImageDetails.destinationImageURI;
-              if (destinationImageDetails.imagePullSecretName) {
-                // gather all the secrets to add
-                secretsToAdd.add(destinationImageDetails.imagePullSecretName);
-              }
-            }
-          }
-        }
+        // Process all containers
+        mutateContainerImages(containers, secretsToAdd);
+        mutateContainerImages(initContainers, secretsToAdd);
 
         // Add image pull secrets to the manifest
-        if (secretsToAdd.size > 0) {
-          manifest.spec.template.spec.imagePullSecrets = Array.from(secretsToAdd).map(name => ({
-            name,
-          }));
+        if (manifest.spec?.template?.spec) {
+          applySecrets(manifest.spec.template.spec, secretsToAdd);
         }
       }
       // Handle WorkflowTemplate resources
       else if (manifest.kind === 'WorkflowTemplate' && manifest.spec?.templates) {
-        // Replace the registry prefix for all containers in the workflow
-        for (const template of manifest.spec.templates) {
-          if (template.container?.image) {
-            const destinationImageDetails = replaceRegistryPrefix(template.container.image);
-            if (destinationImageDetails) {
-              template.container.image = destinationImageDetails.destinationImageURI;
-              if (destinationImageDetails.imagePullSecretName) {
-                // gather all the secrets to add
-                secretsToAdd.add(destinationImageDetails.imagePullSecretName);
-              }
-            }
-          }
-        }
+        // Process all containers in the workflow
+        const containers = manifest.spec.templates.map(template => template.container);
+        mutateContainerImages(containers, secretsToAdd);
 
         // Add image pull secrets to the manifest
-        if (secretsToAdd.size > 0) {
-          manifest.spec.imagePullSecrets = Array.from(secretsToAdd).map(name => ({
-            name,
-          }));
+        if (manifest.spec) {
+          applySecrets(manifest.spec, secretsToAdd);
         }
       }
     }
@@ -136,25 +128,13 @@ export function mutate(mutationInput: MutationInput): MutationOutput {
   else if (flyteTasks) {
     for (const task of Object.values(flyteTasks)) {
       const containers = task?.template?.k8sPod?.podSpec?.containers;
-      // Replace the registry prefix for all containers in the flyte task
-      if (containers) {
-        for (const container of containers) {
-          const destinationImageDetails = replaceRegistryPrefix(container.image);
-          if (destinationImageDetails) {
-            container.image = destinationImageDetails.destinationImageURI;
-            if (destinationImageDetails.imagePullSecretName) {
-              // gather all the secrets to add
-              secretsToAdd.add(destinationImageDetails.imagePullSecretName);
-            }
-          }
-        }
-      }
+      
+      // Process all containers in the flyte task
+      mutateContainerImages(containers, secretsToAdd);
 
       // Add image pull secrets to the task
-      if (secretsToAdd.size > 0) {
-        task.template.k8sPod.podSpec.imagePullSecrets = Array.from(secretsToAdd).map(name => ({
-          name,
-        }));
+      if (task?.template?.k8sPod?.podSpec) {
+        applySecrets(task.template.k8sPod.podSpec, secretsToAdd);
       }
     }
   }
