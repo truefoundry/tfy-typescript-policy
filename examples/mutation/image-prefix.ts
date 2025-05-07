@@ -151,7 +151,6 @@ export function mutate(mutationInput: MutationInput): MutationOutput {
       }
 
       // Add image pull secrets to the task
-       // TODO: Need to verify if this is correct
       if (secretsToAdd.size > 0) {
         task.template.k8sPod.podSpec.imagePullSecrets = Array.from(secretsToAdd).map(name => ({
           name,
