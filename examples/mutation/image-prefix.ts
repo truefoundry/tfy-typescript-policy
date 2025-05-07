@@ -114,7 +114,7 @@ export function mutate(mutationInput: MutationInput): MutationOutput {
       // Handle WorkflowTemplate resources
       else if (manifest.kind === 'WorkflowTemplate' && manifest.spec?.templates) {
         // Process all containers in the workflow
-        const containers = manifest.spec.templates.map(template => template.container);
+        const containers = manifest.spec.templates.map((template: { container: any; }) => template.container);
         mutateContainerImages(containers, secretsToAdd);
 
         // Add image pull secrets to the manifest
