@@ -12,7 +12,7 @@
  * - Output: tfy.jfrog.io/library/nginx:latest
  */
 
-import { MutationInput, MutationOutput } from '../../src/types';
+import { MutationInput, MutationOutput } from '@src/types';
 
 /**
  * Registry mapping configuration
