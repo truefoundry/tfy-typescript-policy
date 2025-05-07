@@ -8,8 +8,8 @@
  * Image pull secrets can be added to pull from the private registry.
  * 
  * For example:
- * - Input:  docker.io/library/nginx:latest
- * - Output: tfy.jfrog.io/library/nginx:latest
+ * - Input:  https://docker.io/nginx:latest
+ * - Output: https://tfy.jfrog.io/nginx:latest
  */
 
 import { MutationInput, MutationOutput } from '@src/types';
