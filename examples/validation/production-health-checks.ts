@@ -11,11 +11,16 @@ export function validate(validationInput: ValidationInput): void {
   const environment = context.environment;
   const isProduction = environment?.manifest.isProduction;
 
+  // if the environment is not production return
   if (!isProduction) return;
+
+  // if the application is not a service return
   if (manifest.type !== 'service') return;
+
+  // if the service does not have both liveness and readiness probes throw an error
   if (!manifest.liveness_probe || !manifest.readiness_probe) {
     throw new ValidationError(
-      'Liveness and Readiness probes are required for production services.'
+      'Liveness and Readiness probes are required for production services. See: https://docs.truefoundry.com/docs/liveness-readiness-probe'
     );
   }
 } 

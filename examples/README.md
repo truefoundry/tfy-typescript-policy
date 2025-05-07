@@ -7,10 +7,14 @@ This directory contains example policies that demonstrate how to use the TrueFou
 ```
 examples/
 ├── validation/           # Validation policy examples
-│   ├── gpu-auto-shutdown/    # Example for enforcing auto-shutdown in dev environments for GPUs
+│   ├── gpu-auto-shutdown.ts    # Example for enforcing auto-shutdown in dev environments for GPUs
+│   ├── production-health-checks.ts    # Example for enforcing health checks in production
+│   ├── production-single-replica.ts    # Example for enforcing single replica in production
+│   ├── resource-limits.ts    # Example for enforcing resource limits
+│   └── production-image-source.ts    # Example for enforcing production image sources
 ├── mutation/            # Mutation policy examples
-│   ├── image-prefix/    # Example for modifying container image prefixes
-│   ├── node-affinity/   # Example for adding node affinity rules
+│   ├── image-prefix.ts    # Example for modifying container image prefixes
+│   └── node-affinity.ts   # Example for adding node affinity rules
 └── README.md           # This file
 ```
 
