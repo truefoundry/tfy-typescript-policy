@@ -14,7 +14,7 @@ export function validate(validationInput: ValidationInput): void {
   // if the environment is production return
   if (isProduction) return;
 
-  // if the application is not a service or async-service return
+  // if the application is not a service or async service return
   if (manifest.type !== 'service' && manifest.type !== 'async-service') return;
 
   // if the service has cpu limit greater than 32 throw an error

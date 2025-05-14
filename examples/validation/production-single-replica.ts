@@ -14,7 +14,7 @@ export function validate(validationInput: ValidationInput): void {
   // if the environment is not production return
   if (!isProduction) return;
 
-  // if the application is not a service or async-service return
+  // if the application is not a service or async service return
   if (manifest.type !== 'service' && manifest.type !== 'async-service') return;
 
   const replicas = manifest.replicas;
