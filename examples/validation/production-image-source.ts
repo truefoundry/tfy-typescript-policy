@@ -14,8 +14,8 @@ export function validate(validationInput: ValidationInput): void {
   // if the environment is not production return
   if (!isProduction) return;
 
-  // if the application is not a service return
-  if (manifest.type !== 'service') return;
+  // if the application is not a service or async-service return
+  if (manifest.type !== 'service' && manifest.type !== 'async-service') return;
 
   // if the image type is build and the build source local or remote throw an error
   const imageType = manifest.image?.type;
