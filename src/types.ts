@@ -1,4 +1,4 @@
-import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow, EnvironmentManifest } from './models';
+import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow, EnvironmentManifest, AsyncService } from './models';
 
 export declare class V1OwnerReference {
   'apiVersion': string;
@@ -114,7 +114,7 @@ export interface ValidationContext {
   };
 }
 
-export type ApplicationManifest = Service | Job | Notebook | SSHServer | Workflow;
+export type ApplicationManifest = Service | AsyncService | Job | Notebook | SSHServer | Workflow;
 
 export interface MutationInput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];

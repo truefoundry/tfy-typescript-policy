@@ -13,31 +13,42 @@ export type ModelType =
   | "rerank"
   | "realtime";
 export type AWSRegion =
-  | "us-east-1"
-  | "us-east-2"
-  | "us-west-1"
-  | "us-west-2"
   | "af-south-1"
   | "ap-east-1"
-  | "ap-southeast-3"
-  | "ap-south-1"
-  | "ap-northeast-3"
+  | "ap-northeast-1"
   | "ap-northeast-2"
+  | "ap-northeast-3"
+  | "ap-south-1"
+  | "ap-south-2"
   | "ap-southeast-1"
   | "ap-southeast-2"
-  | "ap-northeast-1"
+  | "ap-southeast-3"
+  | "ap-southeast-4"
+  | "ap-southeast-5"
+  | "ap-southeast-7"
   | "ca-central-1"
+  | "ca-west-1"
+  | "cn-north-1"
+  | "cn-northwest-1"
   | "eu-central-1"
+  | "eu-central-2"
+  | "eu-north-1"
+  | "eu-south-1"
+  | "eu-south-2"
   | "eu-west-1"
   | "eu-west-2"
-  | "eu-south-1"
   | "eu-west-3"
-  | "eu-north-1"
-  | "me-south-1"
+  | "il-central-1"
   | "me-central-1"
+  | "me-south-1"
+  | "mx-central-1"
   | "sa-east-1"
+  | "us-east-1"
+  | "us-east-2"
   | "us-gov-east-1"
-  | "us-gov-west-1";
+  | "us-gov-west-1"
+  | "us-west-1"
+  | "us-west-2";
 export type Agent = BaseArtifactVersion & {} & {
   /**
    * +value=agent
@@ -149,7 +160,7 @@ export type AgentWithFQN = Agent & {} & {
    */
   fqn?: string;
 };
-export type NotificationTarget = Email | SlackWebhook | SlackBot;
+export type NotificationTargetForAlertRule = Email | SlackBot;
 export type AlertSeverity = "warning" | "critical";
 /**
  * +docs=Describes the configuration for the service
@@ -218,6 +229,7 @@ export type AsyncServiceAutoscaling = BaseAutoscaling & {} & {
     | CronMetric
     | AMQPMetricConfig;
 };
+export type NotificationTarget = Email | SlackWebhook | SlackBot;
 export type JobEvent = "START" | "SUCCEEDED" | "FAILED" | "TERMINATED";
 /**
  * +label=Artifact Version
@@ -283,9 +295,41 @@ export type CustomIntegrations =
   | EmailNotificationChannel
   | CustomHelmRepo
   | CustomBlobStorage
-  | CustomJWTAuthIntegration;
+  | CustomJWTAuthIntegration
+  | CustomMCPServerIntegration;
+export type OAuth2LoginProvider = BaseOAuth2Login & {} & {
+  /**
+   * +value=oauth2
+   */
+  type?: "oauth2";
+};
+export type MCPServerAuth =
+  | MCPServerHeaderAuth
+  | MCPServerOAuth2
+  | MCPServerSlackOAuth2;
+/**
+ * +label=OAuth2
+ */
+export type MCPServerOAuth2 = BaseOAuth2Login & {} & {
+  /**
+   * +value=oauth2
+   */
+  type?: "oauth2";
+};
 export type EnvironmentOptimizeFor = "COST" | "AVAILABILITY";
 export type GCPRegion =
+  | "northamerica-northeast1"
+  | "northamerica-northeast2"
+  | "southamerica-east1"
+  | "us-central1"
+  | "us-east1"
+  | "us-east4"
+  | "us-east5"
+  | "us-south1"
+  | "us-west1"
+  | "us-west2"
+  | "us-west3"
+  | "us-west4"
   | "asia-east1"
   | "asia-east2"
   | "asia-northeast1"
@@ -299,21 +343,17 @@ export type GCPRegion =
   | "australia-southeast2"
   | "europe-central2"
   | "europe-north1"
+  | "europe-southwest1"
   | "europe-west1"
   | "europe-west2"
   | "europe-west3"
   | "europe-west4"
   | "europe-west6"
-  | "northamerica-northeast1"
-  | "northamerica-northeast2"
-  | "southamerica-east1"
-  | "us-central1"
-  | "us-east1"
-  | "us-east4"
-  | "us-west1"
-  | "us-west2"
-  | "us-west3"
-  | "us-west4";
+  | "europe-west8"
+  | "europe-west9"
+  | "me-central1"
+  | "me-central2"
+  | "me-west1";
 export type GatewayConfig =
   | RateLimitConfig
   | FallbackConfig
@@ -546,6 +586,7 @@ export type XGBoostSerializationFormat =
   | "json";
 export type PolicyEntityTypes =
   | "service"
+  | "async-service"
   | "job"
   | "notebook"
   | "ssh-server"
@@ -575,6 +616,7 @@ export interface AI21Integrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -582,6 +624,24 @@ export interface AI21Integrations {
    * +uiType=AuthorizedSubjects
    */
   authorized_subjects?: string[];
+}
+export interface PerThousandTokensCostMetric {
+  /**
+   * +value=per_1000_tokens
+   */
+  metric: string;
+  value: InputOutputBasedCostMetricValue;
+}
+export interface InputOutputBasedCostMetricValue {
+  input: number;
+  output: number;
+}
+export interface PerThousandEmbeddingTokensCostMetric {
+  /**
+   * +value=per_1000_embedding_tokens
+   */
+  metric: string;
+  value: number;
 }
 /**
  * +label=TwentyOneAI API Key Auth
@@ -620,6 +680,7 @@ export interface AI21Model {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -866,7 +927,7 @@ export interface AlertConfig {
    * +uiProps={"descriptionInline":true}
    * +sort=1
    */
-  notification_targets: NotificationTarget[];
+  notification_targets: NotificationTargetForAlertRule[];
   /**
    * +label=Rules
    * +usage=Define one or more alert rules that specify the conditions to monitor, when to trigger alerts, and how they should be handled.
@@ -898,23 +959,6 @@ export interface Email {
    * +sort=665
    */
   to_emails: string[];
-}
-/**
- * +label=Slack Webhook
- */
-export interface SlackWebhook {
-  /**
-   * +value=slack-webhook
-   */
-  type: "slack-webhook";
-  /**
-   * +label=Notification Channel
-   * +usage=Specify the notification channel to send alerts to
-   * +uiType=AlertNotificationChannel
-   * +uiProps={"integrationType":"notification-channel"}
-   * +sort=660
-   */
-  notification_channel: string;
 }
 export interface SlackBot {
   /**
@@ -955,37 +999,28 @@ export interface PrometheusAlertRule {
    */
   name: string;
   /**
-   * +label=Expression
+   * +label=Prometheus Expression
    * +usage=Enter a valid PromQL expression that defines the condition for triggering this alert. The alert will fire when this expression evaluates to true for the duration specified in the duration to trigger alert field.
    * +uiProps={"descriptionInline":true}
    * +placeholder=sum(increase(container_cpu_cfs_throttled_periods_total{container="postgresql", namespace="prod-ws"}[5m])) by (container, namespace) / sum(increase(container_cpu_cfs_periods_total[5m])) by (container, namespace) > ( 25 / 100 )
-   * +sort=2
+   * +sort=3
    * +uiType=TextArea
    */
   expression: string;
   /**
-   * +label=Duration to Trigger Alert
-   * +usage=Duration (in seconds) that the alert expression must be true for before triggering an alert notification. For example, if value is 60, the alert expression must be true for 60 seconds before triggering an alert.
-   * +uiProps={"descriptionInline":true}
+   * +label=Trigger After (seconds)
    * +placeholder=300
-   * +sort=3
+   * +usage=The prometheus expression must remain true for this duration (in seconds) before the alert is triggered. If the condition becomes false before this time elapses, the alert will not fire.
+   * +sort=4
    */
   for: number;
   severity: AlertSeverity;
-  /**
-   * +label=Time to resolve
-   * +usage=Duration to keep alert firing after condition is no longer met. Helps prevent flapping alerts and false resolutions. Without this, alerts deactivate immediately when expression evaluates to false. For example, set to 300 seconds (5 minutes) to ensure the alert is in firing state for 5 minutes after the condition is no longer met before it is marked as resolved.Default it is 300s. Minimum value is 60s.
-   * +uiProps={"descriptionInline":true}
-   * +placeholder=300
-   * +sort=5
-   */
-  cooldown_period?: number;
   /**
    * +label=Description
    * +usage=Description of the alert rule which will be displayed in the alert rule list. This can be used to provide more context about the alert rule.
    * +uiProps={"descriptionInline":true}
    * +placeholder=CPU throttled for more than 25% of the time in the last 5 minutes for
-   * +sort=6
+   * +sort=2
    */
   description?: string;
   /**
@@ -1011,6 +1046,12 @@ export interface TrueFoundryManagedAlertRule {
    * +uiProps={"descriptionInline":true}
    */
   name: string;
+  /**
+   * +label=Description
+   * +usage=Enter a description for the managed alert rule. This can be used to provide more context about the alert rule.
+   * +uiProps={"descriptionInline":true}
+   */
+  description?: string;
   /**
    * +label=Notification Enabled
    * +usage=When enabled, notifications will be sent to all configured target channels when the alert is triggered. Disable to keep the alert rule active but suppress notifications.
@@ -1041,6 +1082,7 @@ export interface AnthropicInetgrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -1086,6 +1128,7 @@ export interface AnthropicModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -1137,6 +1180,7 @@ export interface AnyScaleIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -1182,6 +1226,7 @@ export interface AnyscaleModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -2831,6 +2876,23 @@ export interface JobAlert {
    */
   on_failure?: boolean;
 }
+/**
+ * +label=Slack Webhook
+ */
+export interface SlackWebhook {
+  /**
+   * +value=slack-webhook
+   */
+  type: "slack-webhook";
+  /**
+   * +label=Notification Channel
+   * +usage=Specify the notification channel to send alerts to
+   * +uiType=AlertNotificationChannel
+   * +uiProps={"integrationType":"notification-channel"}
+   * +sort=660
+   */
+  notification_channel: string;
+}
 export interface Helm {
   /**
    * +value=helm
@@ -3259,29 +3321,13 @@ export interface BedrockModel {
    * +label=Auth Data
    */
   auth_data?: BedrockKeyAuth | AwsAssumedRoleBasedAuth;
-  /**
-   * +sort=90
-   * +uiProps={"showSearch":true}
-   */
-  region:
-    | "us-east-1"
-    | "us-west-2"
-    | "ap-south-1"
-    | "ap-southeast-1"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "ca-central-1"
-    | "eu-central-1"
-    | "eu-west-1"
-    | "eu-west-2"
-    | "eu-west-3"
-    | "sa-east-1"
-    | "us-gov-west-1";
+  region: AWSRegion;
   /**
    * +usage=Specify the type of the model
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -3373,6 +3419,7 @@ export interface AzureAIInferenceModel {
    * +sort=400
    */
   deploymentDetails: AzureAIManagedDeployment | AzureAIServerlessDeployment;
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -3650,24 +3697,6 @@ export interface AzureFoundryModel {
    */
   authorized_subjects?: string[];
 }
-export interface PerThousandTokensCostMetric {
-  /**
-   * +value=per_1000_tokens
-   */
-  metric: string;
-  value: InputOutputBasedCostMetricValue;
-}
-export interface InputOutputBasedCostMetricValue {
-  input: number;
-  output: number;
-}
-export interface PerThousandEmbeddingTokensCostMetric {
-  /**
-   * +value=per_1000_embedding_tokens
-   */
-  metric: string;
-  value: number;
-}
 /**
  * +label=Azure OpenAI Model
  * +icon=azure
@@ -3802,6 +3831,48 @@ export interface AzureProviderAccount {
    * +uiType=IntegrationsGroup
    */
   integrations: AzureIntegrations[];
+}
+/**
+ * +label=OAuth2 Client Configuration
+ * +usage=OAuth2 client configuration to get the JWT.
+ */
+export interface BaseOAuth2Login {
+  /**
+   * +label=Client ID
+   * +usage=client ID for OAuth2.
+   * +sort=200
+   */
+  client_id: string;
+  /**
+   * +label=Client Secret
+   * +usage=Client secret or the TrueFoundry secret containing the client secret for OAuth2.
+   * +sort=300
+   */
+  client_secret: string;
+  /**
+   * +label=Authorization URL
+   * +usage=URL for the authorization request
+   * +sort=400
+   */
+  authorization_url: string;
+  /**
+   * +label=Token URL
+   * +usage=The endpoint to exchange auth code for tokens.
+   * +sort=500
+   */
+  token_url: string;
+  /**
+   * +label=Scopes
+   * +usage=List of scopes to request from the OAuth2 provider.
+   * +sort=600
+   */
+  scopes: string[];
+  /**
+   * +label=JWT Source
+   * +usage=Source of the JWT token to be used for verification.
+   * +sort=700
+   */
+  jwt_source: "access_token" | "id_token";
 }
 /**
  * +docs=Describes the configuration for the service
@@ -3965,6 +4036,7 @@ export interface ClusterManifest {
     /**
      * +label=Default Storage Class
      * +usage=The default storage class for the home directory of workbench
+     * +message=Must not contain any spaces.
      */
     default_storage_class?: string;
   };
@@ -4014,6 +4086,7 @@ export interface NotebookConfig {
   /**
    * +label=Notebook Base Domain
    * +usage=The base domain for the cluster with which you can access your Notebooks
+   * +message=Must not contain any spaces.
    */
   base_domain: string;
 }
@@ -4022,6 +4095,7 @@ export interface SSHServerConfig {
    * +label=SSH Base Domain
    * +usage=The base domain for the cluster with which you can access your SSH containers
    * +sort=1000
+   * +message=Must not contain any spaces.
    */
   base_domain: string;
   /**
@@ -4106,6 +4180,7 @@ export interface CohereIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -4151,6 +4226,7 @@ export interface CohereModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -4479,14 +4555,55 @@ export interface CustomJWTAuthIntegration {
   authorized_subjects?: string[];
 }
 /**
- * +label=OAuth2 Client Configuration
- * +usage=OAuth2 client configuration to get the JWT.
+ * +label=Custom MCP Server Integration
+ * +icon=puzzle-piece
  */
-export interface OAuth2LoginProvider {
+export interface CustomMCPServerIntegration {
   /**
-   * +value=oauth2
+   * +value=integration/mcp-server/custom
    */
-  type: "oauth2";
+  type: "integration/mcp-server/custom";
+  /**
+   * +label=Name
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=100
+   */
+  name: string;
+  /**
+   * +label=URL
+   * +usage=The endpoint URL for the MCP server.
+   * +sort=200
+   */
+  url: string;
+  auth?: MCPServerAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=400
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Header Auth
+ */
+export interface MCPServerHeaderAuth {
+  /**
+   * +value=header
+   */
+  type: "header";
+  headers: {
+    [k: string]: string;
+  };
+}
+/**
+ * +label=Slack OAuth2
+ */
+export interface MCPServerSlackOAuth2 {
+  /**
+   * +value=slack-oauth2
+   */
+  type: "slack-oauth2";
   /**
    * +label=Client ID
    * +usage=client ID for OAuth2.
@@ -4500,13 +4617,15 @@ export interface OAuth2LoginProvider {
    */
   client_secret: string;
   /**
-   * +label=Authorization URL
+   * Override the default authorization_url
+   * +label=Slack Authorization URL
    * +usage=URL for the authorization request
    * +sort=400
    */
   authorization_url: string;
   /**
-   * +label=Token URL
+   * Override the default token_url
+   * +label=Slack Token URL
    * +usage=The endpoint to exchange auth code for tokens.
    * +sort=500
    */
@@ -4517,12 +4636,6 @@ export interface OAuth2LoginProvider {
    * +sort=600
    */
   scopes: string[];
-  /**
-   * +label=JWT Source
-   * +usage=Source of the JWT token to be used for verification.
-   * +sort=700
-   */
-  jwt_source: "access_token" | "id_token";
 }
 /**
  * +label=Custom
@@ -4629,6 +4742,7 @@ export interface DatabricksIntegrations {
    * +uiType=Select
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -4662,6 +4776,7 @@ export interface DatabricksModel {
    * +uiType=Select
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -4716,6 +4831,7 @@ export interface DeepinfraIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -4761,6 +4877,7 @@ export interface DeepinfraModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -4956,6 +5073,7 @@ export interface EnvironmentManifest {
 export interface FailureToleranceConfig {
   allowed_failures_per_minute: number;
   cooldown_period_minutes: number;
+  failure_status_codes: number[];
 }
 export interface FallbackConfig {
   name: string;
@@ -5223,15 +5341,10 @@ export interface LatencyBasedLoadBalancingRule {
   when: LoadBalancingWhen;
   load_balance_targets: LatencyBasedLoadBalanceTarget[];
   type: "latency-based-routing";
-  config: LatencyBasedRoutingConfig;
 }
 export interface LatencyBasedLoadBalanceTarget {
   target: string;
   override_params?: {};
-}
-export interface LatencyBasedRoutingConfig {
-  lookback_window_minutes?: number;
-  allowed_latency_overhead_percentage?: number;
 }
 export interface GuardrailsConfig {
   /**
@@ -5472,6 +5585,7 @@ export interface VertexModel {
    */
   model_types: ModelType[];
   region?: GCPRegion;
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -5505,6 +5619,7 @@ export interface GoogleModel {
    */
   model_types: ModelType[];
   auth_data?: GcpApiKeyAuth;
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -5674,6 +5789,7 @@ export interface GroqIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -5719,6 +5835,7 @@ export interface GroqModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -6174,6 +6291,7 @@ export interface NomicIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -6239,6 +6357,7 @@ export interface PalmIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -6304,6 +6423,7 @@ export interface PerplexityIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -6369,6 +6489,7 @@ export interface MistralIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -6434,6 +6555,7 @@ export interface TogetherAIIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -6491,6 +6613,7 @@ export interface OllamaIntegrations {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -7692,6 +7815,7 @@ export interface MistralAIModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -7723,6 +7847,7 @@ export interface NomicModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -7754,6 +7879,7 @@ export interface OllamaModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -7819,6 +7945,7 @@ export interface PalmModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -7850,6 +7977,7 @@ export interface PerplexityAIModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -7942,6 +8070,7 @@ export interface TogetherAIModel {
    * +sort=4
    */
   model_types: ModelType[];
+  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
