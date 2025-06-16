@@ -6,12 +6,22 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+/**
+ * +label=Model Type
+ * +uiType=Select
+ */
 export type ModelType =
-  | "completion"
   | "chat"
+  | "completion"
   | "embedding"
+  | "realtime"
   | "rerank"
-  | "realtime";
+  | "audio"
+  | "moderation";
+export type ModelCostMetric =
+  | PerThousandTokensCostMetric
+  | PerThousandEmbeddingTokensCostMetric
+  | PublicCostMetric;
 export type AWSRegion =
   | "af-south-1"
   | "ap-east-1"
@@ -49,6 +59,32 @@ export type AWSRegion =
   | "us-gov-west-1"
   | "us-west-1"
   | "us-west-2";
+export type AwsEksRegions =
+  | "us-east-1"
+  | "us-east-2"
+  | "us-west-1"
+  | "us-west-2"
+  | "af-south-1"
+  | "ap-east-1"
+  | "ap-southeast-3"
+  | "ap-south-1"
+  | "ap-northeast-3"
+  | "ap-northeast-2"
+  | "ap-southeast-1"
+  | "ap-southeast-2"
+  | "ap-northeast-1"
+  | "ca-central-1"
+  | "eu-central-1"
+  | "eu-west-1"
+  | "eu-west-2"
+  | "eu-south-1"
+  | "eu-west-3"
+  | "eu-north-1"
+  | "me-south-1"
+  | "me-central-1"
+  | "sa-east-1"
+  | "us-gov-east-1"
+  | "us-gov-west-1";
 export type Agent = BaseArtifactVersion & {} & {
   /**
    * +value=agent
@@ -160,7 +196,7 @@ export type AgentWithFQN = Agent & {} & {
    */
   fqn?: string;
 };
-export type NotificationTargetForAlertRule = Email | SlackBot;
+export type NotificationTargetForAlertRule = Email | SlackBot | PagerDuty;
 export type AlertSeverity = "warning" | "critical";
 /**
  * +docs=Describes the configuration for the service
@@ -230,7 +266,6 @@ export type AsyncServiceAutoscaling = BaseAutoscaling & {} & {
     | AMQPMetricConfig;
 };
 export type NotificationTarget = Email | SlackWebhook | SlackBot;
-export type JobEvent = "START" | "SUCCEEDED" | "FAILED" | "TERMINATED";
 /**
  * +label=Artifact Version
  * +usage=Log a new Artifact Version containing files and folders with metadata
@@ -279,6 +314,11 @@ export type AzureIntegrations =
   | AzureReposIntegration
   | AzureAIInferenceModel
   | AzureFoundryModel;
+export type BudgetLimitUnit =
+  | "cost_per_day"
+  | "cost_per_month"
+  | "tokens_per_day"
+  | "tokens_per_month";
 /**
  * +docs=Describes the configuration for the code server
  */
@@ -358,7 +398,8 @@ export type GatewayConfig =
   | RateLimitConfig
   | FallbackConfig
   | LoadBalancingConfig
-  | GuardrailsConfig;
+  | GuardrailsConfig
+  | BudgetConfig;
 export type RateLimitUnit =
   | "requests_per_day"
   | "tokens_per_minute"
@@ -376,8 +417,24 @@ export type GcpIntegrations =
   | GcpGkeIntegration
   | VertexModel
   | GoogleModel;
+export type InfraProviderAccount =
+  | AwsProviderAccount
+  | AzureProviderAccount
+  | GcpProviderAccount
+  | DockerhubProviderAccount
+  | BitbucketProviderAccount
+  | CustomProviderAccount
+  | GithubProviderAccount
+  | GitlabProviderAccount
+  | JfrogProviderAccount
+  | TTLProviderAccount
+  | TrueFoundryProviderAccount
+  | QuayProviderAccount
+  | SlackProviderAccount
+  | WebhookProviderAccount
+  | PagerDutyProviderAccount;
+export type SlackIntegrations = SlackWebhookIntegration | SlackBotIntegration;
 export type Input =
-  | ProviderAccounts
   | ClusterManifest
   | VirtualAccountManifest
   | WorkspaceManifest
@@ -405,37 +462,12 @@ export type Input =
   | EnvironmentManifest
   | Policy
   | AlertConfig
-  | TracingProject;
-export type ProviderAccounts =
-  | AwsProviderAccount
-  | AzureProviderAccount
-  | GcpProviderAccount
-  | DockerhubProviderAccount
-  | OpenaiProviderAccount
-  | BitbucketProviderAccount
-  | CustomProviderAccount
-  | GithubProviderAccount
-  | GitlabProviderAccount
-  | JfrogProviderAccount
-  | TTLProviderAccount
-  | TrueFoundryProviderAccount
-  | QuayProviderAccount
-  | CohereProviderAccount
-  | AnthropicProviderAccount
-  | AnyscaleProviderAccount
-  | DeepinfraProviderAccount
-  | GroqProviderAccount
-  | NomicProviderAccount
-  | PalmProviderAccount
-  | PerplexityAIProviderAccount
-  | MistralAIProviderAccount
-  | TogetherAIProviderAccount
-  | AI21ProviderAccount
-  | OllamaProviderAccount
-  | SlackProviderAccount
-  | WebhookProviderAccount
-  | DatabricksProviderAccount;
-export type SlackIntegrations = SlackWebhookIntegration | SlackBotIntegration;
+  | TracingProject
+  | ProviderAccounts
+  | AWSTerraformConfig
+  | GCPTerraformConfig
+  | AzureTerraformConfig
+  | GenericTerraformConfig;
 export type ProviderIntegrations =
   | AwsIntegrations
   | GcpIntegrations
@@ -448,11 +480,11 @@ export type ProviderIntegrations =
   | QuayIntegrations
   | CohereIntegrations
   | AI21Integrations
-  | AnthropicInetgrations
-  | AnyScaleIntegrations
+  | AnthropicIntegrations
+  | AnyscaleIntegrations
   | DeepinfraIntegrations
   | GroqIntegrations
-  | MistralIntegrations
+  | MistralAIIntegrations
   | PerplexityIntegrations
   | TogetherAIIntegrations
   | NomicIntegrations
@@ -461,8 +493,14 @@ export type ProviderIntegrations =
   | OpenAIIntegrations
   | SlackIntegrations
   | WebhookIntegrations
-  | DatabricksIntegrations;
-export type WorkflowEvent = "SUCCEEDED" | "FAILED" | "ABORTED" | "TIMED_OUT";
+  | DatabricksIntegrations
+  | BedrockModelV2
+  | VertexModelV2
+  | GeminiModelV2
+  | AzureOpenAIModelV2
+  | AzureFoundryModelV2
+  | PagerDutyIntegration
+  | SelfHostedModel;
 /**
  * +docs=Describes the configuration for the service
  */
@@ -592,36 +630,66 @@ export type PolicyEntityTypes =
   | "ssh-server"
   | "workflow";
 export type PolicyActions = "apply";
+export type ProviderAccounts =
+  | InfraProviderAccount
+  | ModelProviderAccount
+  | MCPServerProviderAccount;
+export type ModelProviderAccount =
+  | AwsBedrockProviderAccount
+  | GoogleVertexProviderAccount
+  | GoogleGeminiProviderAccount
+  | AzureOpenAIProviderAccount
+  | AzureFoundryProviderAccount
+  | CohereProviderAccount
+  | AI21ProviderAccount
+  | AnthropicProviderAccount
+  | DeepinfraProviderAccount
+  | GroqProviderAccount
+  | MistralAIProviderAccount
+  | PerplexityAIProviderAccount
+  | TogetherAIProviderAccount
+  | NomicProviderAccount
+  | PalmProviderAccount
+  | OllamaProviderAccount
+  | OpenaiProviderAccount
+  | DatabricksProviderAccount
+  | SelfHostedModelProviderAccount;
 
 /**
- * +label=A21 Model
+ * +label=AI21 Model
+ * +icon=ai21
  */
 export interface AI21Integrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/ai21
    */
   type: "integration/model/ai21";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this AI21 model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The unique identifier for the AI21 model
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the AI21 model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -643,8 +711,15 @@ export interface PerThousandEmbeddingTokensCostMetric {
   metric: string;
   value: number;
 }
+export interface PublicCostMetric {
+  /**
+   * +value=public_cost
+   */
+  metric: string;
+}
 /**
- * +label=TwentyOneAI API Key Auth
+ * +label=AI21 API Key Auth
+ * +usage=Authentication method using AI21 API key
  */
 export interface AI21KeyAuth {
   /**
@@ -654,38 +729,46 @@ export interface AI21KeyAuth {
   /**
    * +sort=100
    * +uiType=Password
+   * +usage=The API key for AI21 authentication
+   * +message=API key must not be empty
    */
   api_key: string;
 }
 /**
- * +label=A21 Model
+ * +label=AI21 Model
+ * +icon=ai21
  */
 export interface AI21Model {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/ai21
    */
   type: "integration/model/ai21";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this AI21 model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The unique identifier for the AI21 model
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the AI21 model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -699,15 +782,40 @@ export interface AI21ProviderAccount {
    */
   type: "provider-account/ai21";
   /**
-   * +uiProps={"disableEdit":true}
    * +label=Name
+   * +sort=100
+   * +usage=The name of the AI21 provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
    */
   name: string;
   auth_data: AI21KeyAuth;
   /**
+   * +label=Integrations
+   * +sort=400
+   * +usage=List of integrations that are associated with the AI21 provider account
    * +uiType=IntegrationsGroup
    */
   integrations?: AI21Integrations[];
+  /**
+   * +label=Collaborators
+   * +sort=200
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+export interface Collaborator {
+  /**
+   * +label=Subject FQN
+   * +usage=Fully Qualified Name of the subject. eg: user:email or team:teamname
+   */
+  subject: string;
+  /**
+   * +label=Role ID
+   * +usage=Role ID for the resource
+   */
+  role_id: string;
 }
 /**
  * +docs=Describes the configuration for the input AMQP worker
@@ -795,6 +903,275 @@ export interface AWSAccessKeyAuth {
    */
   aws_session_token?: string;
 }
+/**
+ * +label=Cluster Addons
+ * +usage=Disable addons that are already installed
+ */
+export interface AWSAddons {
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=1
+   */
+  argocd: {
+    /**
+     * +label=Install ArgoCD
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=2
+   */
+  argo_rollouts: {
+    /**
+     * +label=Install Argo Rollouts for truefoundry managed services
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=3
+   */
+  argo_workflows: {
+    /**
+     * +label=Install Argo Workflows for workflow automation
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=4
+   */
+  istio: {
+    /**
+     * +label=Install Istio for ingress and service mesh (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=5
+   */
+  ebs: {
+    /**
+     * +label=Install EBS CSI Driver for persistent storage (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=6
+   */
+  efs: {
+    /**
+     * +label=Install EFS CSI Driver for data and model caching (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=7
+   */
+  aws_load_balancer_controller: {
+    /**
+     * +label=Install AWS Load Balancer Controller for ALB/NLB support (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=8
+   */
+  keda: {
+    /**
+     * +label=Install KEDA for event-driven autoscaling
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=9
+   */
+  metrics_server: {
+    /**
+     * +label=Install Metrics Server for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=10
+   */
+  prometheus: {
+    /**
+     * +label=Install Prometheus for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=11
+   */
+  loki: {
+    /**
+     * +label=Install Loki for logging
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=12
+   */
+  gpu: {
+    /**
+     * +label=Install GPU Operator for GPU support
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=13
+   */
+  kubecost: {
+    /**
+     * +label=Install Kubecost for cost monitoring
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=14
+   */
+  karpenter: {
+    /**
+     * +label=Install Karpenter for cluster autoscaling (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+}
+/**
+ * +label=S3 Bucket and DynamoDB for managing Terraform State
+ * +usage=If not present, will be created in the next step
+ */
+export interface AWSBackendConfig {
+  /**
+   * +label=S3 Bucket Name to store Terraform state
+   * +sort=901
+   */
+  bucket_name: string;
+  /**
+   * +label=Key (path) where Terraform state will be stored in the bucket
+   * +sort=902
+   * +uiProps={"observeDirtyState": true}
+   */
+  bucket_key: string;
+  /**
+   * +label=DynamoDB Table Name
+   * +sort=903
+   * +usage=Optional: DynamoDB table name for state locking of terraform pipeline
+   */
+  dynamodb_table?: string;
+}
+/**
+ * +label=PostgreSQL on Kubernetes
+ * +usage=Installs PostgreSQL as container in the cluster. Not recommended for production use.
+ */
+export interface AWSDBOnKubernetes {
+  /**
+   * +value=db_on_kubernetes
+   */
+  type: "db_on_kubernetes";
+}
+export interface AWSExistingCluster {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Existing cluster name
+   * +icon=fa-cube:#black
+   * +sort=201
+   */
+  name: string;
+  /**
+   * +label=ARN of the IAM role used by the EKS node groups
+   * +sort=202
+   */
+  node_role_arn: string;
+  /**
+   * +label=ARN of the OpenID Connect provider for the cluster
+   * +sort=204
+   */
+  oidc_issuer_arn: string;
+  /**
+   * +label=URL of the OpenID Connect provider for the cluster
+   * +sort=205
+   */
+  oidc_issuer_url: string;
+  addons: AWSAddons;
+}
+/**
+ * +label=Existing PostgreSQL Configuration
+ * +usage=Existing PostgreSQL instance credentials, ensure that it is accessible from cluster subnet
+ */
+export interface AWSExistingDatabaseConfig {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Database Host
+   */
+  host: string;
+  /**
+   * +label=Database Name
+   */
+  name: string;
+  /**
+   * +label=Database Username
+   */
+  username: string;
+  /**
+   * +label=Database Password
+   */
+  password: string;
+}
+/**
+ * +label=Existing VPC
+ * +usage=For requirements and setup of existing VPC, refer to [Docs](https://docs.truefoundry.com/docs/infrastructure/aws-compute-plane-setup#requirements%3A)
+ */
+export interface AWSExistingNetwork {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Existing VPC ID
+   * +sort=31
+   * +message=Must be a valid VPC ID (e.g. vpc-049f6de574711ab32, vpc-049f6de5)
+   */
+  vpc_id: string;
+  /**
+   * +label=Private Subnet IDs
+   * +usage=List of existing private subnet IDs
+   * +sort=32
+   */
+  private_subnets_ids: string[];
+}
 export interface AWSInferentia {
   /**
    * +value=aws_inferentia
@@ -811,6 +1188,296 @@ export interface AWSInferentia {
    * +usage=Count of Inferentia accelerator chips to provide to the application
    */
   count: number;
+}
+export interface AWSNewCluster {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Cluster Name
+   * +usage=The name of the new cluster
+   * +message=Cluster name must be between 3 to 35 lower case characters long alphanumeric word, may contain - in between, cannot start with a number, and cannot end with a hyphen.
+   */
+  name: string;
+  /**
+   * +label=Kubernetes Version
+   * +usage=The version of Kubernetes to use for the cluster
+   * +uiType=Select
+   */
+  kubernetes_version: "1.32" | "1.31" | "1.30";
+}
+/**
+ * +label=Managed PostgreSQL (RDS)
+ * +usage=Managed PostgreSQL instance configuration for AWS RDS [Docs](https://aws.amazon.com/rds/)
+ */
+export interface AWSNewDatabaseConfig {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Node Security Group ID for Control Plane
+   * +usage=Security group ID of the cluster nodes to allow database access
+   * +uiType=Hidden
+   */
+  existing_cluster_node_security_group_id?: string;
+}
+/**
+ * Network type definitions
+ * +label=New VPC
+ */
+export interface AWSNewNetwork {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=VPC CIDR
+   * +usage=The IPv4 CIDR block for the VPC
+   * +sort=31
+   * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/16). CIDR block size must be between /16 and /28. Recommended CIDR block size /16 to /20
+   */
+  vpc_cidr: string;
+  /**
+   * +label=Public Subnet CIDRs
+   * +sort=32
+   * +usage=Public subnets are used to run Load Balancers and NAT gateways. Atleast one public subnet is required
+   * +uiProps={"enableSetDefaultValue":true}
+   */
+  public_subnets_cidrs: string[];
+  /**
+   * +label=Private Subnet CIDRs
+   * +sort=33
+   * +usage=Private subnets are used to run EKS nodes. Number of private subnets should be more than or equal to number of availability zones
+   * +uiProps={"enableSetDefaultValue":true}
+   */
+  private_subnets_cidrs: string[];
+}
+export interface AWSTerraformConfig {
+  /**
+   * +uiType=Hidden
+   */
+  version: string;
+  region: AwsEksRegions;
+  /**
+   * +label=Cluster Configuration
+   * +sort=2
+   */
+  cluster: AWSNewCluster | AWSExistingCluster;
+  /**
+   * +label=Availability Zones in the region
+   * +sort=3
+   * +uiProps={"enableSetDefaultValue":true}
+   */
+  availability_zones: string[];
+  /**
+   * +label=Network Configuration
+   * +sort=4
+   */
+  network: AWSNewNetwork | AWSExistingNetwork;
+  /**
+   * +label=Control Plane Configuration
+   * +uiType=Hidden
+   */
+  truefoundry_control_plane?: {
+    /**
+     * +label=Tenant Name
+     * +uiType=Hidden
+     */
+    tenant_name: string;
+    /**
+     * +label=Image Pull Config
+     * +usage=JSON configuration for pulling container images
+     * +uiType=Hidden
+     */
+    image_pull_config_json: string;
+    /**
+     * +label=License Key
+     * +usage=License key for connecting to the control plane
+     * +uiType=Hidden
+     */
+    license_key: string;
+    /**
+     * +label=Database Configuration
+     */
+    database:
+      | AWSDBOnKubernetes
+      | AWSNewDatabaseConfig
+      | AWSExistingDatabaseConfig;
+    /**
+     * +label=Control Plane URL
+     * +usage=URL of the new control plane (with http:// or https:// prefix)
+     * +message=Must be a valid HTTP(S) URL with a valid domain name
+     */
+    control_plane_url: string;
+    loadbalancer?: ControlPlaneLoadBalancer;
+  };
+  /**
+   * +label=Compute Plane Configuration
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  truefoundry_compute_plane?: {
+    /**
+     * +label=Control Plane URL
+     * +usage=URL of the TrueFoundry control plane
+     * +uiType=Hidden
+     */
+    control_plane_url: string;
+    /**
+     * +label=API Key
+     * +usage=API key for authenticating with the control plane
+     * +uiType=Hidden
+     */
+    tfy_api_key: string;
+    /**
+     * +label=Control Plane Roles
+     * +usage=List of roles that can assume your platform role. Change this if you are using your own control plane.
+     * +uiType=Hidden
+     */
+    control_plane_roles: string[];
+    loadbalancer?: ComputePlaneLoadBalancer;
+    /**
+     * +label=Platform Features
+     * +usage=Enable or disable platform features
+     */
+    platform_features: {
+      /**
+       * +label=Enable Blob Storage
+       * +usage=Enable blob storage feature in the platform
+       */
+      enable_blob_storage: boolean;
+      /**
+       * +label=Enable Registry
+       * +usage=Enable docker registry feature in the platform
+       */
+      enable_container_registry: boolean;
+      /**
+       * +label=Enable Secrets Manager
+       * +usage=Enable secrets manager feature in the platform
+       */
+      enable_secrets_manager: boolean;
+      /**
+       * +label=Enable Parameter Store
+       * +usage=Enable parameter store feature in the platform
+       */
+      enable_parameter_store: boolean;
+      /**
+       * +label=Enable Cluster Integration
+       * +usage=Enable cluster integration feature in the platform
+       */
+      enable_cluster_integration: boolean;
+    };
+  };
+  /**
+   * +label=Resource Tags
+   * +usage=Key-value pairs to tag AWS resources
+   */
+  tags?: {
+    [k: string]: string | {};
+  };
+  /**
+   * +label=Authentication
+   * +sort=10
+   * +usage=Choose between AWS profile or access key authentication. Admin level access is required or implement restricted access [Docs](https://docs.truefoundry.com/docs/infrastructure/aws-compute-plane-setup#permissions-required-to-create-the-infrastructure)
+   */
+  auth: AuthTypeProfile | AuthTypeAccessKey;
+  backend: AWSBackendConfig;
+}
+/**
+ * +label=Load Balancer Scheme and Certificate
+ * +usage=Configuration for the load balancer used by the control plane cluster. Specify the type of loadbalancer (Public or Private) and SSL certificate.
+ */
+export interface ControlPlaneLoadBalancer {
+  /**
+   * +label=Scheme
+   * +usage=Type of load balancer to create for the cluster
+   * +sort=1
+   */
+  scheme: PublicLoadBalancerType | PrivateLoadBalancerType;
+  /**
+   * +label=Certificate ARN
+   * +usage=ARN of the SSL certificate to use for the load balancer.
+   * +sort=2
+   */
+  certificate_arn?: string;
+}
+/**
+ * +label=Public
+ * +usage=Public (Internet facing) load balancer will be created exposed to the world
+ */
+export interface PublicLoadBalancerType {
+  /**
+   * +label=Internet facing load balancer
+   * +value=internet-facing
+   */
+  type: "internet-facing";
+}
+/**
+ * +label=Private
+ * +usage=Private (Internal) load balancer will be created exposed only inside the network.
+ */
+export interface PrivateLoadBalancerType {
+  /**
+   * +label=Load Balancer Type
+   * +value=internal
+   */
+  type: "internal";
+}
+/**
+ * +label=Certificate and Domain (Load Balancer)
+ * +usage=Configuration for the load balancer used by the compute plane cluster. Specify the type of loadbalancer (Public or Private), domain names, and SSL certificates. Disable if you have installed istio in your existing cluster.
+ */
+export interface ComputePlaneLoadBalancer {
+  /**
+   * +label=Scheme
+   * +usage=Type of load balancer to create for the cluster
+   * +sort=1
+   */
+  scheme: PublicLoadBalancerType | PrivateLoadBalancerType;
+  /**
+   * +label=Domains
+   * +usage=FQDNs which will point to the balancer.
+   * +sort=2
+   */
+  domain_names?: string[];
+  /**
+   * +label=Certificate ARN
+   * +usage=ARN of the SSL certificates to use for the load balancer.
+   * +sort=3
+   */
+  certificate_arns?: string[];
+}
+/**
+ * +label=AWS Profile Based Auth
+ */
+export interface AuthTypeProfile {
+  /**
+   * +value=profile
+   */
+  type: "profile";
+  /**
+   * +label=AWS Profile in ~/.aws/config in your local aws-cli setup
+   */
+  profile: string;
+}
+/**
+ * +label=Access/Secret Key Based Auth
+ */
+export interface AuthTypeAccessKey {
+  /**
+   * +value=access_key
+   */
+  type: "access_key";
+  /**
+   * +label=AWS Access Key for authentication
+   */
+  access_key: string;
+  /**
+   * +label=AWS Secret Key for authentication
+   */
+  secret_key: string;
 }
 export interface BaseArtifactVersion {
   /**
@@ -934,7 +1601,7 @@ export interface AlertConfig {
    * +uiProps={"descriptionInline":true}
    * +uiType=Structs
    */
-  rules: (PrometheusAlertRule | TrueFoundryManagedAlertRule)[];
+  rules: PrometheusAlertRule[];
 }
 /**
  * +label=Email
@@ -981,6 +1648,20 @@ export interface SlackBot {
    */
   channels: string[];
 }
+export interface PagerDuty {
+  /**
+   * +value=pagerduty
+   */
+  type: "pagerduty";
+  /**
+   * +label=Notification Channel
+   * +usage=Specify the notification channel to send alerts to
+   * +uiType=AlertNotificationChannel
+   * +uiProps={"integrationType":"notification-channel"}
+   * +sort=660
+   */
+  notification_channel: string;
+}
 /**
  * +label=Prometheus Alert Rule
  */
@@ -1001,10 +1682,10 @@ export interface PrometheusAlertRule {
   /**
    * +label=Prometheus Expression
    * +usage=Enter a valid PromQL expression that defines the condition for triggering this alert. The alert will fire when this expression evaluates to true for the duration specified in the duration to trigger alert field.
-   * +uiProps={"descriptionInline":true}
+   * +uiProps={"descriptionInline":true, "language": "promql"}
    * +placeholder=sum(increase(container_cpu_cfs_throttled_periods_total{container="postgresql", namespace="prod-ws"}[5m])) by (container, namespace) / sum(increase(container_cpu_cfs_periods_total[5m])) by (container, namespace) > ( 25 / 100 )
    * +sort=3
-   * +uiType=TextArea
+   * +uiType=CodeEditor
    */
   expression: string;
   /**
@@ -1032,45 +1713,22 @@ export interface PrometheusAlertRule {
   notification_enabled: boolean;
 }
 /**
- * +label=TrueFoundry Managed Alert Rule
- */
-export interface TrueFoundryManagedAlertRule {
-  /**
-   * +label=Type
-   * +value=tfy-managed-alert-rule
-   */
-  type: "tfy-managed-alert-rule";
-  /**
-   * +label=Name
-   * +usage=Specify the name of the managed alert rule. These are predefined alerts provided by TrueFoundry - please refer to the documentation for the complete list of available alert names and their purposes.
-   * +uiProps={"descriptionInline":true}
-   */
-  name: string;
-  /**
-   * +label=Description
-   * +usage=Enter a description for the managed alert rule. This can be used to provide more context about the alert rule.
-   * +uiProps={"descriptionInline":true}
-   */
-  description?: string;
-  /**
-   * +label=Notification Enabled
-   * +usage=When enabled, notifications will be sent to all configured target channels when the alert is triggered. Disable to keep the alert rule active but suppress notifications.
-   * +uiProps={"descriptionInline":true}
-   */
-  notification_enabled: boolean;
-}
-/**
  * +label=Anthropic Model
+ * +icon=anthropic
  */
-export interface AnthropicInetgrations {
+export interface AnthropicIntegrations {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +usage=Name to identify this Anthropic model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
+   * +label=Model ID
    * +sort=2
+   * +usage=The unique identifier for the Anthropic model
+   * +message=Model ID must not be empty
    */
   model_id: string;
   /**
@@ -1078,21 +1736,23 @@ export interface AnthropicInetgrations {
    */
   type: "integration/model/anthropic";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Anthropic model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
  * +label=Anthropic API Key Auth
+ * +usage=Authentication method using Anthropic API key
  */
 export interface AnthropicKeyAuth {
   /**
@@ -1102,21 +1762,28 @@ export interface AnthropicKeyAuth {
   /**
    * +sort=100
    * +uiType=Password
+   * +usage=The API key for Anthropic authentication
+   * +message=API key must not be empty
    */
   api_key: string;
 }
 /**
  * +label=Anthropic Model
+ * +icon=anthropic
  */
 export interface AnthropicModel {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +usage=Name to identify this Anthropic model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
+   * +label=Model ID
    * +sort=2
+   * +usage=The unique identifier for the Anthropic model
+   * +message=Model ID must not be empty
    */
   model_id: string;
   /**
@@ -1124,16 +1791,17 @@ export interface AnthropicModel {
    */
   type: "integration/model/anthropic";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Anthropic model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -1147,28 +1815,46 @@ export interface AnthropicProviderAccount {
    */
   type: "provider-account/anthropic";
   /**
-   * +uiProps={"disableEdit":true}
    * +label=Name
+   * +sort=100
+   * +usage=The name of the Anthropic provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
    */
   name: string;
   auth_data: AnthropicKeyAuth;
   /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Anthropic provider account
    * +uiType=IntegrationsGroup
    */
-  integrations?: AnthropicInetgrations[];
+  integrations?: AnthropicIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Hidden
+   */
+  collaborators?: Collaborator[];
 }
 /**
  * +label=Anyscale Model
+ * +icon=anyscale
  */
-export interface AnyScaleIntegrations {
+export interface AnyscaleIntegrations {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +usage=Name to identify this Anyscale model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
+   * +label=Model ID
    * +sort=2
+   * +usage=The unique identifier for the Anyscale model
+   * +message=Model ID must not be empty
    */
   model_id: string;
   /**
@@ -1176,45 +1862,37 @@ export interface AnyScaleIntegrations {
    */
   type: "integration/model/anyscale";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Anyscale model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Anyscale API Key Auth
- */
-export interface AnyscaleKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=100
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
  * +label=Anyscale Model
+ * +icon=anyscale
  */
 export interface AnyscaleModel {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +usage=Name to identify this Anyscale model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
+   * +label=Model ID
    * +sort=2
+   * +usage=The unique identifier for the Anyscale model
+   * +message=Model ID must not be empty
    */
   model_id: string;
   /**
@@ -1222,38 +1900,19 @@ export interface AnyscaleModel {
    */
   type: "integration/model/anyscale";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Anyscale model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
-}
-/**
- * +label=Anyscale
- * +icon=anyscale
- */
-export interface AnyscaleProviderAccount {
-  /**
-   * +value=provider-account/anyscale
-   */
-  type: "provider-account/anyscale";
-  /**
-   * +uiProps={"disableEdit":true}
-   * +label=Name
-   */
-  name: string;
-  auth_data: AnyscaleKeyAuth;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations?: AnyScaleIntegrations[];
 }
 /**
  * +docs=Describes the configuration for the application set
@@ -1510,7 +2169,7 @@ export interface PythonBuild {
    * +usage=Python version to run your application. Should be one of the tags listed on [Official Python Docker Page](https://hub.docker.com/_/python)
    * +message=Please enter a valid Python version tag
    */
-  python_version: string;
+  python_version?: string;
   /**
    * +label=Path to build context
    * +usage=Build path relative to project root path.
@@ -2244,7 +2903,7 @@ export interface CronMetric {
 export interface Autoshutdown {
   /**
    * +label=Wait Time
-   * +usage=The period to wait after the last received request before scaling the replicas to 0
+   * +usage=The period to wait after the last received request before scaling the replicas to 0. This value should be high enough to allow for the replicas of the service to come up to avoid premature scaling down.
    */
   wait_time: number;
 }
@@ -2857,12 +3516,6 @@ export interface JobAlert {
   to_emails?: string[];
   notification_target?: NotificationTarget;
   /**
-   * +label=Events
-   * +usage=Specify the events to send alerts for, it should be one of the following: START, SUCCEEDED, FAILED, TERMINATED
-   * +uiType=Hidden
-   */
-  events?: JobEvent[];
-  /**
    * +label=On Start
    * +usage=Send an alert when the job starts
    * +sort=670
@@ -3127,6 +3780,84 @@ export interface AwsAssumedRoleBasedAuth {
   assumed_role_arn: string;
 }
 /**
+ * +label=AWS Bedrock
+ * +icon=aws
+ */
+export interface AwsBedrockProviderAccount {
+  /**
+   * +value=provider-account/aws-bedrock
+   */
+  type: "provider-account/aws-bedrock";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the AWS Bedrock provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  region: AWSRegion;
+  /**
+   * +label=AWS Account Auth Data
+   * +sort=400
+   * +usage=Authentication data for the AWS account
+   */
+  auth_data?: AwsAccessKeyBasedAuth | AwsAssumedRoleBasedAuth;
+  /**
+   * +label=Integrations
+   * +sort=500
+   * +usage=List of integrations that are associated with the AWS Bedrock provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: BedrockModelV2[];
+  /**
+   * +label=Collaborators
+   * +sort=600
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Bedrock Model
+ * +icon=aws-bedrock
+ */
+export interface BedrockModelV2 {
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Bedrock model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The unique identifier for the Bedrock model
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +value=integration/model/bedrock
+   */
+  type: "integration/model/bedrock";
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Bedrock model
+   */
+  model_types: ModelType[];
+  region?: AWSRegion;
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=6
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
  * +label=AWS ECR
  * +icon=aws-ecr
  */
@@ -3306,7 +4037,7 @@ export interface BedrockModel {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
@@ -3327,12 +4058,11 @@ export interface BedrockModel {
    * +sort=4
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -3399,7 +4129,7 @@ export interface AzureAIInferenceModel {
    * +label=Display Name
    * +usage=Name to identify this Azure AI model
    * +sort=100
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
@@ -3419,17 +4149,17 @@ export interface AzureAIInferenceModel {
    * +sort=400
    */
   deploymentDetails: AzureAIManagedDeployment | AzureAIServerlessDeployment;
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
  * +label=Azure API Key Auth
+ * +icon=azure
  */
 export interface AzureKeyAuth {
   /**
@@ -3437,7 +4167,10 @@ export interface AzureKeyAuth {
    */
   type: "api-key";
   /**
-   * +sort=90
+   * +label=API Key
+   * +sort=100
+   * +usage=The API key for Azure AI Foundry authentication
+   * +message=API key must not be empty
    * +uiType=Password
    */
   api_key: string;
@@ -3483,6 +4216,133 @@ export interface AzureAIServerlessDeployment {
    * +sort=200
    */
   region: string;
+}
+/**
+ * +label=Cluster Addons
+ * +usage=Disable addons that are already installed
+ */
+export interface AzureAddons {
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=1
+   */
+  argocd: {
+    /**
+     * +label=Install ArgoCD
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=2
+   */
+  argo_rollouts: {
+    /**
+     * +label=Install Argo Rollouts for truefoundry managed services
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=3
+   */
+  argo_workflows: {
+    /**
+     * +label=Install Argo Workflows for workflow automation
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=4
+   */
+  istio: {
+    /**
+     * +label=Install Istio for ingress and service mesh (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=5
+   */
+  keda: {
+    /**
+     * +label=Install KEDA for event-driven autoscaling
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=6
+   */
+  metrics_server: {
+    /**
+     * +label=Install Metrics Server for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=7
+   */
+  prometheus: {
+    /**
+     * +label=Install Prometheus for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=8
+   */
+  loki: {
+    /**
+     * +label=Install Loki for logging
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=9
+   */
+  gpu: {
+    /**
+     * +label=Install GPU Operator for GPU support
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=10
+   */
+  kubecost: {
+    /**
+     * +label=Install Kubecost for cost monitoring
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=11
+   */
+  cert_manager: {
+    /**
+     * +label=Install Certificate Manager for automated certificate management
+     */
+    enabled: boolean;
+  };
 }
 /**
  * +icon=azure-aks
@@ -3554,6 +4414,35 @@ export interface AzureOAuth {
    * +sort=400
    */
   subscription_id: string;
+}
+/**
+ * +label=Storage account configuration for Terraform state
+ */
+export interface AzureBackendConfig {
+  /**
+   * +label=Resource Group Name
+   * +usage=The name of the resource group containing the storage account
+   * +message=Resource group names can only include alphanumerics, underscores, parentheses, hyphens, periods and can have max length of 90
+   */
+  resource_group_name: string;
+  /**
+   * +label=Storage Account Name
+   * +usage=The name of the storage account for Terraform state (must be between 3-24 characters, lowercase letters and numbers only)
+   * +message=Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only. Storage account name must be unique within Azure
+   */
+  storage_account_name: string;
+  /**
+   * +label=Container Name
+   * +usage=The name of the blob container for storing state
+   * +message=Container name can be between 3 and 63 characters long and can only include alphanumerics and hyphens
+   */
+  container_name: string;
+  /**
+   * +label=State File Key
+   * +usage=The key (path) where the Terraform state file will be stored
+   * +uiProps={"observeDirtyState": true}
+   */
+  key: string;
 }
 /**
  * +label=Azure Basic Auth
@@ -3655,6 +4544,93 @@ export interface AzureContainerRegistry {
   authorized_subjects?: string[];
 }
 /**
+ * +label=PostgreSQL on Kubernetes
+ * +usage=Installs PostgreSQL as container in the cluster. Not recommended for production use.
+ */
+export interface AzureDBOnKubernetes {
+  /**
+   * +value=db_on_kubernetes
+   */
+  type: "db_on_kubernetes";
+}
+/**
+ * +label=Use Existing Cluster
+ */
+export interface AzureExistingCluster {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Cluster Name
+   * +usage=The name of your existing AKS cluster
+   * +sort=401
+   * +message=Cluster name must be between 3 to 25 lower case characters long alphanumeric word, may contain - in between, cannot start with a number, and cannot end with a hyphen.
+   */
+  name: string;
+  addons: AzureAddons;
+}
+/**
+ * +label=Existing PostgreSQL Configuration
+ */
+export interface AzureExistingDatabaseConfig {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Database Host
+   */
+  host: string;
+  /**
+   * +label=Database Name
+   */
+  name: string;
+  /**
+   * +label=Database Username
+   */
+  username: string;
+  /**
+   * +label=Database Password
+   */
+  password: string;
+}
+/**
+ * +label=Use Existing VNet
+ * +usage=For requirements and setup of existing VPC, refer to [Docs](https://docs.truefoundry.com/docs/infrastructure/gcp-compute-plane-setup#requirements%3A)
+ */
+export interface AzureExistingNetwork {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=VNet ID
+   * +usage=The ID of your existing Virtual Network
+   */
+  vnet_id: string;
+  /**
+   * +label=Subnet ID
+   * +usage=The ID of your existing Subnet
+   */
+  subnet_id: string;
+}
+/**
+ * +label=Use Existing Resource Group
+ */
+export interface AzureExistingResourceGroup {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Resource Group Name
+   * +usage=The name of your existing resource group
+   * +message=Resource group names can only include alphanumeric, underscore, parentheses, hyphens, periods and can have max length of 90
+   */
+  name: string;
+}
+/**
  * +label=Azure AI Foundry Model
  */
 export interface AzureFoundryModel {
@@ -3666,7 +4642,7 @@ export interface AzureFoundryModel {
    * +label=Display Name
    * +usage=Name to identify this Azure AI Foundry model
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
@@ -3688,14 +4664,127 @@ export interface AzureFoundryModel {
    */
   azure_endpoint: string;
   auth_data?: AzureKeyAuth;
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
+}
+/**
+ * +label=Azure Foundry Model
+ * +icon=azure
+ */
+export interface AzureFoundryModelV2 {
+  /**
+   * +value=integration/model/azure-foundry
+   */
+  type: "integration/model/azure-foundry";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Azure Foundry model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  auth_data: AzureKeyAuth;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Types of models supported by this Azure AI Foundry deployment
+   */
+  model_types: ModelType[];
+  /**
+   * +label=Azure Deployment Name
+   * +sort=3
+   * +usage=The name of the Azure Foundry deployment
+   */
+  model_id: string;
+  /**
+   * +label=Azure Endpoint
+   * +sort=4
+   * +usage=The Azure AI Foundry endpoint URL
+   * +message=Endpoint URL must not be empty
+   */
+  azure_endpoint: string;
+  /**
+   * +label=API Version
+   * +sort=5
+   * +usage=The API version for the Azure Foundry model
+   */
+  api_version: string;
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=7
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Azure Foundry Provider Account
+ * +icon=azure
+ */
+export interface AzureFoundryProviderAccount {
+  /**
+   * +value=provider-account/azure-foundry
+   */
+  type: "provider-account/azure-foundry";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Azure Foundry provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +label=Integrations
+   * +sort=200
+   * +usage=List of integrations that are associated with the Azure Foundry provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: AzureFoundryModelV2[];
+  /**
+   * +label=Collaborators
+   * +sort=300
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Initial Node Pool Configuration
+ * +usage=On-demand system node pool required by Azure to run system-critical applications
+ */
+export interface AzureInitialNodePool {
+  /**
+   * +label=Node Pool Name
+   * +usage=The name of the node pool
+   * +sort=4011
+   * +message=Name of the nodepool can only contain lower case alphanumericals less than or equal to 10 characters and can only start with letters
+   */
+  name: string;
+  /**
+   * +label=Instance Type
+   * +usage=The Azure instance type for the node pool
+   * +sort=4012
+   */
+  instance_type: string;
+  /**
+   * +label=Minimum Node Count
+   * +usage=Minimum number of nodes in the pool
+   * +sort=4013
+   */
+  min_count: number;
+  /**
+   * +label=Maximum Node Count
+   * +usage=Maximum number of nodes in the pool
+   * +sort=4014
+   */
+  max_count: number;
 }
 /**
  * +label=Azure OpenAI Model
@@ -3705,7 +4794,7 @@ export interface AzureOpenAIModel {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
@@ -3734,12 +4823,11 @@ export interface AzureOpenAIModel {
    * +sort=4
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -3801,6 +4889,210 @@ export interface AzureReposIntegration {
   authorized_subjects?: string[];
 }
 /**
+ * +label=Create New Cluster
+ */
+export interface AzureNewCluster {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Cluster Name
+   * +usage=The name for the new AKS cluster
+   * +sort=401
+   * +message=Cluster name must be between 3 to 35 lower case characters long alphanumeric word, may contain - in between, cannot start with a number, and cannot end with a hyphen.
+   */
+  name: string;
+  /**
+   * +label=Kubernetes Version
+   * +usage=The version of Kubernetes to use for the cluster
+   * +sort=402
+   * +uiType=Select
+   */
+  kubernetes_version: "1.31" | "1.30" | "1.29";
+  initial_node_pool: AzureInitialNodePool;
+  /**
+   * +label=Node Pools
+   * +usage=Configure CPU and GPU node pools. Ensure enough spot and on-demand quotas for CPU and GPU machine types are present
+   * +sort=403
+   */
+  node_pools: {
+    cpu_pools: AzureNodePool[];
+    gpu_pools: AzureNodePool[];
+  };
+}
+export interface AzureNodePool {
+  /**
+   * +label=Node Pool Name
+   * +usage=The name of the node pool
+   * +sort=4011
+   * +message=Name of the nodepool can only contain lower case alphanumericals less than or equal to 10 characters and can only start with letters
+   */
+  name: string;
+  /**
+   * +label=Enable On-Demand or spot nodes
+   * +usage=Enable On-demand or spot nodes
+   * +sort=4012
+   */
+  capacity_type: "on_demand" | "spot";
+  /**
+   * +label=Instance Type
+   * +usage=The Azure instance type for the node pool
+   * +sort=4013
+   */
+  instance_type: string;
+  /**
+   * +label=Minimum Node Count
+   * +usage=Minimum number of nodes in the pool
+   * +sort=4014
+   */
+  min_count: number;
+  /**
+   * +label=Maximum Node Count
+   * +usage=Maximum number of nodes in the pool
+   * +sort=4015
+   */
+  max_count: number;
+}
+/**
+ * +label=Managed PostgreSQL (Flexible Server)
+ * +usage=Create a managed PostgreSQL instance in Azure
+ */
+export interface AzureNewDatabaseConfig {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Subnet CIDR for the Managed PostgreSQL
+   * +usage=CIDR block for the control plane database subnet, this cannot be same as the cluster subnet CIDR
+   * +message=Must be a valid IPv4 CIDR notation. CIDR block size must be between /16 and /28. Recommended size is /28 or larger
+   */
+  control_plane_db_subnet_cidr: string;
+}
+/**
+ * +label=Create New VNet
+ * +usage=New VNet Configuration
+ */
+export interface AzureNewNetwork {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=VNet CIDR
+   * +usage=The IPv4 CIDR block for the Virtual Network
+   * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/16). CIDR block size must be between /8 and /28. Recommended CIDR block size must be less /20
+   */
+  vnet_cidr: string;
+  /**
+   * +label=Subnet CIDR
+   * +usage=The IPv4 CIDR block for the AKS subnet
+   * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/16). CIDR block size must be between /8 and /28. Recommended CIDR block size must be less /20
+   */
+  subnet_cidr: string;
+}
+/**
+ * +label=Create New Resource Group
+ */
+export interface AzureNewResourceGroup {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Resource Group Name
+   * +usage=The name for the new resource group
+   * +message=Resource group names can only include alphanumeric, underscore, parentheses, hyphens, periods and can have max length of 90
+   */
+  name: string;
+}
+/**
+ * +label=Azure OpenAI Model
+ * +icon=azure
+ */
+export interface AzureOpenAIModelV2 {
+  /**
+   * +value=integration/model/azure-openai
+   */
+  type: "integration/model/azure-openai";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Azure OpenAI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Azure OpenAI model deployment (e.g. gpt-35-turbo, gpt-4). Used for cost tracking and management
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=API Version
+   * +sort=3
+   * +usage=The Azure OpenAI API version to use
+   * +message=API version must not be empty
+   */
+  api_version: string;
+  /**
+   * +label=Model Types
+   * +sort=4
+   * +usage=Specify the type of the Azure OpenAI model
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=6
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Azure OpenAI Provider Account
+ * +icon=azure
+ */
+export interface AzureOpenAIProviderAccount {
+  /**
+   * +value=provider-account/azure-openai
+   */
+  type: "provider-account/azure-openai";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Azure OpenAI provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +label=Azure Endpoint
+   * +sort=300
+   * +usage=The Azure OpenAI Service endpoint URL
+   * +message=Endpoint URL must not be empty
+   */
+  azure_endpoint: string;
+  auth_data: AzureKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=500
+   * +usage=List of integrations that are associated with the Azure OpenAI provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: AzureOpenAIModelV2[];
+  /**
+   * +label=Collaborators
+   * +sort=200
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
  * +label=Azure
  * +icon=azure
  * +heroDataKey=subscription_id
@@ -3831,6 +5123,122 @@ export interface AzureProviderAccount {
    * +uiType=IntegrationsGroup
    */
   integrations: AzureIntegrations[];
+}
+/**
+ * +label=Azure Configuration
+ */
+export interface AzureTerraformConfig {
+  /**
+   * +uiType=Hidden
+   */
+  version: string;
+  backend: AzureBackendConfig;
+  /**
+   * +label=Location
+   * +usage=The Azure region where resources will be created
+   * +sort=1
+   * +uiType=ClusterRegion
+   */
+  location: string;
+  /**
+   * +label=Resource Group
+   * +sort=2
+   */
+  resource_group: AzureNewResourceGroup | AzureExistingResourceGroup;
+  /**
+   * +label=Cluster Configuration
+   * +sort=3
+   */
+  cluster: AzureNewCluster | AzureExistingCluster;
+  /**
+   * +label=Network Configuration
+   * +sort=4
+   */
+  network: AzureNewNetwork | AzureExistingNetwork;
+  /**
+   * +label=Control Plane Configuration
+   * +sort=6
+   * +uiType=Hidden
+   * +uiProps={"forwardJsonKey":true}
+   */
+  truefoundry_control_plane?: {
+    /**
+     * +label=Tenant Name
+     * +uiType=Hidden
+     */
+    tenant_name: string;
+    /**
+     * +label=Control Plane URL
+     * +usage=URL of the new control plane (with http:// or https:// prefix)
+     * +message=Must be a valid HTTP(S) URL with a valid domain name
+     */
+    control_plane_url: string;
+    /**
+     * +label=Image Pull Config
+     * +uiType=Hidden
+     */
+    image_pull_config_json: string;
+    /**
+     * +label=License Key
+     * +uiType=Hidden
+     */
+    license_key: string;
+    /**
+     * +label=Database Configuration
+     */
+    database:
+      | AzureDBOnKubernetes
+      | AzureNewDatabaseConfig
+      | AzureExistingDatabaseConfig;
+  };
+  /**
+   * +label=Compute Plane Configuration
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  truefoundry_compute_plane?: {
+    /**
+     * +label=Control Plane URL
+     * +usage=URL of the TrueFoundry control plane
+     * +uiType=Hidden
+     */
+    control_plane_url: string;
+    /**
+     * +label=API Key
+     * +usage=API key for authenticating with the control plane
+     * +uiType=Hidden
+     */
+    tfy_api_key: string;
+    /**
+     * +label=Platform Features
+     * +usage=Enable or disable platform features
+     */
+    platform_features: {
+      /**
+       * +label=Enable TrueFoundry Blob Storage
+       * +usage=Enable blob storage feature in the platform
+       */
+      enable_blob_storage: boolean;
+      /**
+       * +label=Enable TrueFoundry Registry
+       * +usage=Enable docker registry feature in the platform
+       */
+      enable_container_registry: boolean;
+      /**
+       * +label=Enable Cluster Integration
+       * +usage=Enable cluster integration through terraform which requires Azure AD developer access (Entra ID). Disable this to create app registration manually. Follow here for [Manual Setup](https://docs.truefoundry.com/docs/integration-provider-azure#azure-aks-integration)
+       */
+      enable_cluster_integration: boolean;
+    };
+  };
+  /**
+   * +label=Resource Tags
+   * +usage=Key-value pairs to tag Azure resources
+   * +sort=7
+   */
+  tags?: {
+    [k: string]: string | {};
+  };
 }
 /**
  * +label=OAuth2 Client Configuration
@@ -3961,6 +5369,24 @@ export interface BitbucketProviderAccount {
    */
   integrations: BitbucketIntegration[];
 }
+export interface BudgetConfig {
+  name: string;
+  type: "gateway-budget-config";
+  rules: BudgetRule[];
+}
+export interface BudgetRule {
+  id: string;
+  when: BudgetWhen;
+  limit_to: number;
+  unit: BudgetLimitUnit;
+}
+export interface BudgetWhen {
+  subjects?: string[];
+  models?: string[];
+  metadata?: {
+    [k: string]: string;
+  };
+}
 export interface ClusterManifest {
   /**
    * +value=cluster
@@ -4040,6 +5466,7 @@ export interface ClusterManifest {
      */
     default_storage_class?: string;
   };
+  spark_config?: SparkConfig;
   /**
    * +label=Cluster Integration FQN
    * +sort=75
@@ -4105,6 +5532,14 @@ export interface SSHServerConfig {
    */
   port: number;
 }
+export interface SparkConfig {
+  /**
+   * +label=Spark UI Base Domain
+   * +usage=The base domain for the cluster with which you can access your Spark UI
+   * +message=Must not contain any spaces.
+   */
+  ui_base_domain: string;
+}
 /**
  * +label=Configured Nodepools
  * +usage=The nodepools that are already created in your cluster. This will be used to schedule your workloads on particular nodepools.
@@ -4112,18 +5547,6 @@ export interface SSHServerConfig {
 export interface Nodepool {
   name: string;
   description?: string;
-}
-export interface Collaborator {
-  /**
-   * +label=Subject FQN
-   * +usage=Fully Qualified Name of the subject. eg: user:email or team:teamname
-   */
-  subject: string;
-  /**
-   * +label=Role ID
-   * +usage=Role ID for the resource
-   */
-  role_id: string;
 }
 /**
  * +usage=Workbench Image with persistent environment (Python 3.11.6)
@@ -4159,38 +5582,45 @@ export interface WorkbenchImage {
 }
 /**
  * +label=Cohere Model
+ * +icon=cohere
  */
 export interface CohereIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/cohere
    */
   type: "integration/model/cohere";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Cohere model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Cohere model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Cohere model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
  * +label=Cohere API Key Auth
+ * +icon=cohere
  */
 export interface CohereKeyAuth {
   /**
@@ -4198,45 +5628,54 @@ export interface CohereKeyAuth {
    */
   type: "api-key";
   /**
+   * +label=API Key
    * +sort=100
+   * +usage=The API key for Cohere authentication
+   * +message=API key must not be empty
    * +uiType=Password
    */
   api_key: string;
 }
 /**
  * +label=Cohere Model
+ * +icon=cohere
  */
 export interface CohereModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/cohere
    */
   type: "integration/model/cohere";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Cohere model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Cohere model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Cohere model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Cohere
+ * +label=Cohere Provider Account
  * +icon=cohere
  */
 export interface CohereProviderAccount {
@@ -4245,15 +5684,28 @@ export interface CohereProviderAccount {
    */
   type: "provider-account/cohere";
   /**
-   * +uiProps={"disableEdit":true}
    * +label=Name
+   * +sort=100
+   * +usage=The name of the Cohere provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
    */
   name: string;
   auth_data: CohereKeyAuth;
   /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Cohere provider account
    * +uiType=IntegrationsGroup
    */
   integrations?: CohereIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
 }
 export interface ContainerTaskConfig {
   /**
@@ -4308,6 +5760,18 @@ export interface CustomBasicAuth {
    * +sort=200
    */
   password: string;
+}
+export interface CustomBearerAuth {
+  /**
+   * +value=bearer-auth
+   */
+  type: "bearer-auth";
+  /**
+   * +label=Bearer Token
+   * +usage=The bearer token for the custom bearer authentication.
+   * +sort=100
+   */
+  bearer_token: string;
 }
 /**
  * +label=Custom Blob Storage
@@ -4415,6 +5879,7 @@ export interface CustomUsernamePasswordArtifactsRegistry {
 export interface CustomModel {
   /**
    * +sort=1
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   hosted_model_name: string;
@@ -4436,7 +5901,21 @@ export interface CustomModel {
    * +sort=4
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  /**
+   * +label=Auth Data
+   * +usage=Custom authentication data for the integration.
+   * +sort=300
+   */
+  auth_data?: CustomBasicAuth | CustomBearerAuth;
+  /**
+   * +label=Custom Headers
+   * +usage=Custom headers for the integration. Forwarded to the provider as is. For example: `{"Authorization": "APIKey <token>"}`
+   * +sort=500
+   */
+  headers?: {
+    [k: string]: string;
+  };
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
@@ -4555,7 +6034,7 @@ export interface CustomJWTAuthIntegration {
   authorized_subjects?: string[];
 }
 /**
- * +label=Custom MCP Server Integration
+ * +label=Custom MCP Server
  * +icon=puzzle-piece
  */
 export interface CustomMCPServerIntegration {
@@ -4570,16 +6049,24 @@ export interface CustomMCPServerIntegration {
    */
   name: string;
   /**
+   * +label=Description
+   * +uiType=TextArea
+   * +usage=The Description of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=200
+   * +uiProps={"descriptionInline":true}
+   */
+  description?: string;
+  /**
    * +label=URL
    * +usage=The endpoint URL for the MCP server.
-   * +sort=200
+   * +sort=300
    */
   url: string;
   auth?: MCPServerAuth;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=400
+   * +sort=500
    * +uiType=AuthorizedSubjects
    */
   authorized_subjects?: string[];
@@ -4705,6 +6192,7 @@ export interface DataDirectory {
 }
 /**
  * +label=Databricks API Key Auth
+ * +icon=databricks
  */
 export interface DatabricksApiKeyAuth {
   /**
@@ -4712,7 +6200,10 @@ export interface DatabricksApiKeyAuth {
    */
   type: "api-key";
   /**
+   * +label=API Key
    * +sort=100
+   * +usage=The API key for Databricks authentication
+   * +message=API key must not be empty
    * +uiType=Password
    */
   api_key: string;
@@ -4723,31 +6214,36 @@ export interface DatabricksApiKeyAuth {
  */
 export interface DatabricksIntegrations {
   /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
    * +value=integration/model/databricks
    */
   type: "integration/model/databricks";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Databricks model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Databricks model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Databricks model
    * +uiType=Select
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -4757,36 +6253,41 @@ export interface DatabricksIntegrations {
  */
 export interface DatabricksModel {
   /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
    * +value=integration/model/databricks
    */
   type: "integration/model/databricks";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Databricks model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Databricks model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Databricks model
    * +uiType=Select
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Databricks
+ * +label=Databricks Provider Account
  * +icon=databricks
  */
 export interface DatabricksProviderAccount {
@@ -4795,53 +6296,77 @@ export interface DatabricksProviderAccount {
    */
   type: "provider-account/databricks";
   /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Databricks provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    * +uiProps={"disableEdit":true}
    */
   name: string;
   auth_data: DatabricksApiKeyAuth;
   /**
    * +label=Base URL
+   * +sort=400
+   * +usage=The base URL of your Databricks workspace
+   * +message=Base URL must not be empty
    */
   base_url: string;
   /**
+   * +label=Integrations
+   * +sort=500
+   * +usage=List of integrations that are associated with the Databricks provider account
    * +uiType=IntegrationsGroup
    */
   integrations: DatabricksIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=200
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
 }
 /**
- * +label=Deepinfra Model
+ * +label=DeepInfra Model
+ * +icon=deepinfra
  */
 export interface DeepinfraIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/deepinfra
    */
   type: "integration/model/deepinfra";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this DeepInfra model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the DeepInfra model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the DeepInfra model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Deepinfra API Key Auth
+ * +label=DeepInfra API Key Auth
+ * +icon=deepinfra
  */
 export interface DeepinfraKeyAuth {
   /**
@@ -4849,45 +6374,54 @@ export interface DeepinfraKeyAuth {
    */
   type: "api-key";
   /**
+   * +label=API Key
    * +sort=100
+   * +usage=The API key for DeepInfra authentication
+   * +message=API key must not be empty
    * +uiType=Password
    */
   api_key: string;
 }
 /**
- * +label=Deepinfra Model
+ * +label=DeepInfra Model
+ * +icon=deepinfra
  */
 export interface DeepinfraModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/deepinfra
    */
   type: "integration/model/deepinfra";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this DeepInfra model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the DeepInfra model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the DeepInfra model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Deepinfra
+ * +label=DeepInfra Provider Account
  * +icon=deepinfra
  */
 export interface DeepinfraProviderAccount {
@@ -4896,15 +6430,28 @@ export interface DeepinfraProviderAccount {
    */
   type: "provider-account/deepinfra";
   /**
-   * +uiProps={"disableEdit":true}
    * +label=Name
+   * +sort=100
+   * +usage=The name of the DeepInfra provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
    */
   name: string;
   auth_data: DeepinfraKeyAuth;
   /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the DeepInfra provider account
    * +uiType=IntegrationsGroup
    */
   integrations?: DeepinfraIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
 }
 /**
  * +label=Dockerhub Basic Auth
@@ -5199,7 +6746,7 @@ export interface TaskPythonBuild {
    * +usage=Python version to run your application. Should be one of the tags listed on [Official Python Docker Page](https://hub.docker.com/_/python)
    * +message=Please enter a valid Python version tag
    */
-  python_version: string;
+  python_version?: string;
   /**
    * `Path to build context`
    * +label=Path to requirements
@@ -5284,6 +6831,442 @@ export interface ForwardAction {
    * +label=Target port
    */
   port: number;
+}
+/**
+ * +label=Cluster Addons
+ * +usage=Disable addons that are already installed
+ */
+export interface GCPAddons {
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=1
+   */
+  argocd: {
+    /**
+     * +label=Install ArgoCD
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=2
+   */
+  argo_rollouts: {
+    /**
+     * +label=Install Argo Rollouts for truefoundry managed services
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=3
+   */
+  argo_workflows: {
+    /**
+     * +label=Install Argo Workflows for workflow automation
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=4
+   */
+  istio: {
+    /**
+     * +label=Install Istio for ingress and service mesh (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=5
+   */
+  keda: {
+    /**
+     * +label=Install KEDA for event-driven autoscaling
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=6
+   */
+  metrics_server: {
+    /**
+     * +label=Install Metrics Server for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=7
+   */
+  prometheus: {
+    /**
+     * +label=Install Prometheus for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=8
+   */
+  loki: {
+    /**
+     * +label=Install Loki for logging
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=9
+   */
+  gpu: {
+    /**
+     * +label=Install GPU Operator for GPU support
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=10
+   */
+  kubecost: {
+    /**
+     * +label=Install Kubecost for cost monitoring
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=11
+   */
+  cert_manager: {
+    /**
+     * +label=Install Certificate Manager for automated certificate management
+     */
+    enabled: boolean;
+  };
+}
+/**
+ * +label=Bucket configuration for Terraform state
+ * +usage=GCS bucket to store the Terraform state. GCS bucket, if not present, will be created in the next step
+ */
+export interface GCPBackendConfig {
+  /**
+   * +label=GCS Bucket Name for Terraform state
+   * +usage=Name of the GCS bucket where Terraform state will be stored
+   * +message=Bucket name must be between 3 to 63 characters long containg letters, numbers, hyphens, periods and must be globally unique.
+   */
+  bucket: string;
+  /**
+   * +label=Prefix (path) where Terraform state will be stored in the bucket
+   * +usage=Path where Terraform state will be stored in the bucket
+   * +uiProps={"observeDirtyState": true}
+   */
+  prefix: string;
+}
+/**
+ * +label=PostgreSQL on Kubernetes
+ * +usage=Installs PostgreSQL as container in the cluster. Not recommended for production use.
+ */
+export interface GCPDBOnKubernetes {
+  /**
+   * +value=db_on_kubernetes
+   */
+  type: "db_on_kubernetes";
+}
+export interface GCPExistingCluster {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Cluster Name
+   * +usage=The name of your existing GKE cluster
+   * +sort=401
+   * +message=Cluster name must be between 3 to 39 lower case characters long alphanumeric word, may contain - in between, cannot start with a number, and cannot end with a hyphen.
+   */
+  name: string;
+  addons: GCPAddons;
+}
+/**
+ * +label=Existing PostgreSQL Configuration
+ * +usage=Existing PostgreSQL instance credentials, ensure that it is accessible from cluster subnet
+ */
+export interface GCPExistingDatabaseConfig {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Database Host
+   */
+  host: string;
+  /**
+   * +label=Database Name
+   */
+  name: string;
+  /**
+   * +label=Database Username
+   */
+  username: string;
+  /**
+   * +label=Database Password
+   */
+  password: string;
+}
+/**
+ * +label=Use Existing Network
+ * +usage=For requirements and setup of existing VPC, refer to [Docs](https://docs.truefoundry.com/docs/infrastructure/azure-compute-plane-setup#requirements%3A)
+ */
+export interface GCPExistingNetwork {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Network ID
+   * +usage=The ID of your existing network.
+   * +message=Valid network ID must be passed (e.g. development-vpc)
+   */
+  network_id?: string;
+  /**
+   * +label=Subnet ID
+   * +usage=The ID of your existing Subnet where your cluster nodes will run.
+   * +message=Valid subnet ID must be passed (e.g. development-subnet)
+   */
+  subnet_id?: string;
+}
+export interface GCPNewCluster {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Cluster Name
+   * +usage=The name of the new GKE cluster
+   * +sort=401
+   * +message=Cluster name must be between 3 to 35 lower case characters long alphanumeric word, may contain - in between, cannot start with a number, and cannot end with a hyphen.
+   */
+  name: string;
+  /**
+   * +label=Kubernetes Version
+   * +usage=The version of Kubernetes to use for the cluster
+   * +sort=402
+   * +uiType=Select
+   */
+  kubernetes_version: "1.31" | "1.30" | "1.29";
+  /**
+   * +label=IPv4 CIDR block for GKE master nodes
+   * +usage=IP address range of the control plane internal endpoint
+   * +sort=504
+   * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/16). CIDR block size must be between /24 and /28. Recommended CIDR block size is /28
+   */
+  master_cidr_block: string;
+}
+/**
+ * +label=Managed PostgreSQL (Cloud SQL)
+ * +usage=Managed PostgreSQL instance configuration for Google Cloud SQL [Docs](https://cloud.google.com/sql?hl=en)
+ */
+export interface GCPNewDatabaseConfig {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Subnet CIDR for the Managed PostgreSQL
+   * +usage=CIDR block for the control plane database subnet, this cannot be same as the cluster subnet CIDR
+   * +message=Must be a valid IPv4 CIDR notation. CIDR block size must be between /16 and /24. Recommended size is /24
+   */
+  control_plane_db_network_cidr: string;
+}
+/**
+ * +label=Create New Network
+ */
+export interface GCPNewNetwork {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=IPv4 CIDR block for private subnet
+   * +usage=IP address range of the cluster nodes
+   * +sort=501
+   * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/24). CIDR block size must be between /8 and /28. Recommended size is /24 or larger
+   */
+  private_subnet_cidr: string;
+  /**
+   * +label=IPv4 CIDR block for Pods
+   * +usage=IP address range of the cluster pods
+   * +sort=502
+   * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/16). CIDR block size must be between /8 and /28. Recommended CIDR block size is less than /20
+   */
+  pod_cidr: string;
+  /**
+   * +label=IPv4 CIDR block for services
+   * +usage=IP address range of the cluster services
+   * +sort=503
+   * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/16). CIDR block size must be between /8 and /28. Recommended CIDR block size is less than /24
+   */
+  service_cidr: string;
+  /**
+   * +label=Pod Range Name
+   * +usage=Range name for pod_cidr. GKE uses pod range name to assign address for pods
+   * +sort=505
+   * +message=Pod range name must be between 4 to 62 characters long containing lowercase letters, numbers, or hyphens and cannot end with a hyphen
+   */
+  pod_range_name: ("pods" | {}) & string;
+  /**
+   * +label=Service Range Name
+   * +usage=Range name for service_cidr. GKE uses service range name to assign address for services
+   * +sort=506
+   * +message=Pod range name must be between 4 to 62 characters long containing lowercase letters, numbers, or hyphens and cannot end with a hyphen
+   */
+  service_range_name: string;
+  /**
+   * +label=Network Tags
+   */
+  network_tags?: string[];
+}
+export interface GCPTerraformConfig {
+  /**
+   * +uiType=Hidden
+   */
+  version: string;
+  /**
+   * +label=GCP Region
+   * +usage=The GCP region where resources will be created
+   * +sort=1
+   * +uiType=ClusterRegion
+   */
+  region: string;
+  /**
+   * +label=GCP Project ID
+   * +sort=2
+   * +message=Project ID can be between 6 to 30 characters container alphanumerics, hyphens. Trailing hyphens are not allowed
+   */
+  project_id: string;
+  /**
+   * +label=Cluster Configuration
+   * +sort=3
+   */
+  cluster: GCPNewCluster | GCPExistingCluster;
+  /**
+   * +label=Availability Zones in the selected region
+   * +sort=4
+   * +uiType=CheckboxArray
+   */
+  availability_zones: string[];
+  /**
+   * +label=Network Configuration
+   * +sort=5
+   */
+  network: GCPNewNetwork | GCPExistingNetwork;
+  /**
+   * +label=Control Plane Configuration
+   * +uiType=Hidden
+   * +uiProps={"forwardJsonKey":true}
+   */
+  truefoundry_control_plane?: {
+    /**
+     * +label=Image Pull Config
+     * +usage=JSON configuration for pulling container images
+     * +uiType=Hidden
+     */
+    image_pull_config_json: string;
+    /**
+     * +label=License Key
+     * +usage=License key for connecting to the control plane
+     * +uiType=Hidden
+     */
+    license_key: ("" | {}) & string;
+    /**
+     * +label=Database Configuration
+     */
+    database:
+      | GCPDBOnKubernetes
+      | GCPNewDatabaseConfig
+      | GCPExistingDatabaseConfig;
+    /**
+     * +label=Tenant Name
+     * +usage=The name of the tenant in truefoundry
+     * +uiType=Hidden
+     */
+    tenant_name: string;
+    /**
+     * +label=Control Plane URL
+     * +usage=URL of the new control plane (with http:// or https:// prefix)
+     * +message=Must be a valid HTTP(S) URL with a valid domain name
+     */
+    control_plane_url: string;
+  };
+  /**
+   * +label=Compute Plane Configuration
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  truefoundry_compute_plane?: {
+    /**
+     * +label=Control Plane URL
+     * +usage=URL of the Truefoundry control plane (e.g., https://mycompany.truefoundry.cloud)
+     * +uiType=Hidden
+     */
+    control_plane_url: string;
+    /**
+     * +label=API Key
+     * +usage=API key for authenticating with the control plane
+     * +message=Must be a valid API key in JWT format
+     * +uiType=Hidden
+     */
+    tfy_api_key: ("" | {}) & string;
+    /**
+     * +label=Platform Features
+     * +usage=Enable or disable platform features
+     */
+    platform_features: {
+      /**
+       * +label=Enable Blob Storage
+       * +usage=Enable blob storage feature in the platform
+       */
+      enable_blob_storage: boolean;
+      /**
+       * +label=Enable Registry
+       * +usage=Enable docker registry feature in the platform
+       */
+      enable_container_registry: boolean;
+      /**
+       * +label=Enable Cluster Integration
+       * +usage=Enable cluster integration feature in the platform
+       */
+      enable_cluster_integration: boolean;
+      /**
+       * +label=Enable Secrets
+       * +usage=Enable secrets feature in the platform
+       */
+      enable_secrets: boolean;
+    };
+  };
+  /**
+   * +label=Resource Tags
+   * +usage=Key-value pairs to tag GCP resources
+   * +sort=7
+   */
+  tags?: {
+    [k: string]: string | {};
+  };
+  backend: GCPBackendConfig;
 }
 export interface RateLimitConfig {
   name: string;
@@ -5568,7 +7551,7 @@ export interface VertexModel {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
@@ -5585,12 +7568,11 @@ export interface VertexModel {
    */
   model_types: ModelType[];
   region?: GCPRegion;
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -5602,7 +7584,7 @@ export interface GoogleModel {
   /**
    * +label=Display Name
    * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
@@ -5619,12 +7601,11 @@ export interface GoogleModel {
    */
   model_types: ModelType[];
   auth_data?: GcpApiKeyAuth;
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -5665,6 +7646,176 @@ export interface GcpProviderAccount {
    * +uiType=IntegrationsGroup
    */
   integrations: GcpIntegrations[];
+}
+/**
+ * +label=Gemini Model
+ * +icon=googleCloud
+ */
+export interface GeminiModelV2 {
+  /**
+   * +value=integration/model/gemini
+   */
+  type: "integration/model/gemini";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Gemini model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The unique identifier for the Gemini model
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Gemini model (e.g., chat, text, etc.)
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Cluster Addons
+ * +usage=Disable addons that are already installed
+ */
+export interface GenericAddons {
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  argocd: {
+    /**
+     * +label=Install ArgoCD
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  argo_workflows: {
+    /**
+     * +label=Install Argo Workflows for workflow automation
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  argo_rollouts: {
+    /**
+     * +label=Install Argo Rollouts for truefoundry managed services
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  metrics_server: {
+    /**
+     * +label=Install Metrics Server for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  gpu: {
+    /**
+     * +label=Install GPU Operator for GPU support
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  keda: {
+    /**
+     * +label=Install KEDA for event-driven autoscaling
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  prometheus: {
+    /**
+     * +label=Install Prometheus for metrics collection
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  loki: {
+    /**
+     * +label=Install Loki for logging
+     */
+    enabled: boolean;
+  };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  istio: {
+    /**
+     * +label=Install Istio for ingress and service mesh (Uncheck if already present)
+     */
+    enabled: boolean;
+  };
+}
+export interface GenericExistingCluster {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+  /**
+   * +label=Existing cluster name
+   * +icon=fa-cube:#black
+   * +sort=201
+   */
+  name: string;
+  addons: GenericAddons;
+}
+export interface GenericTerraformConfig {
+  cluster: GenericExistingCluster;
+  /**
+   * +label=Compute Plane Configuration
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   * +sort=2
+   */
+  truefoundry_compute_plane: {
+    /**
+     * +label=Control Plane URL
+     * +usage=URL of the TrueFoundry control plane
+     * +uiType=Hidden
+     */
+    control_plane_url: string;
+    /**
+     * +label=API Key
+     * +usage=API key for authenticating with the control plane
+     * +uiType=Hidden
+     */
+    tfy_api_key: string;
+  };
 }
 /**
  * +label=Github
@@ -5767,39 +7918,160 @@ export interface GluonFramework {
   type: "gluon";
 }
 /**
- * +label=Groq Model
+ * +label=Google Gemini Provider Account
+ * +icon=googleCloud
  */
-export interface GroqIntegrations {
+export interface GoogleGeminiProviderAccount {
   /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +value=provider-account/google-gemini
+   */
+  type: "provider-account/google-gemini";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Google Gemini provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: GcpApiKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=500
+   * +usage=List of integrations that are associated with the Google Gemini provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: GeminiModelV2[];
+  /**
+   * +label=Collaborators
+   * +sort=200
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Google Vertex Provider Account
+ * +icon=googleCloud
+ * +heroDataKey=project_id
+ */
+export interface GoogleVertexProviderAccount {
+  /**
+   * +value=provider-account/google-vertex
+   */
+  type: "provider-account/google-vertex";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Google Vertex provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
    */
   name: string;
   /**
+   * +label=Project ID
+   * +sort=200
+   * +usage=The Google Cloud project ID where Vertex AI is enabled
+   * +message=Project ID must not be empty
+   */
+  project_id: string;
+  region: GCPRegion;
+  auth_data?: GcpKeyFileAuth;
+  /**
+   * +label=Integrations
+   * +sort=500
+   * +usage=List of integrations that are associated with the Google Vertex provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: VertexModelV2[];
+  /**
+   * +label=Collaborators
+   * +sort=600
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Vertex Model
+ * +icon=googleCloud
+ */
+export interface VertexModelV2 {
+  /**
+   * +value=integration/model/vertex
+   */
+  type: "integration/model/vertex";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Vertex AI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
    * +sort=2
+   * +usage=The unique identifier for the Vertex AI model
+   * +message=Model ID must not be empty
    */
   model_id: string;
+  region?: GCPRegion;
+  /**
+   * +label=Model Types
+   * +sort=4
+   * +usage=Specify the type of the Vertex AI model (e.g., chat, text, etc.)
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=6
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Groq Model
+ * +icon=groq
+ */
+export interface GroqIntegrations {
   /**
    * +value=integration/model/groq
    */
   type: "integration/model/groq";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Groq model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Groq model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Groq model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
  * +label=Groq API Key Auth
+ * +icon=groq
  */
 export interface GroqKeyAuth {
   /**
@@ -5807,45 +8079,54 @@ export interface GroqKeyAuth {
    */
   type: "api-key";
   /**
+   * +label=API Key
    * +sort=100
+   * +usage=The API key for Groq authentication
+   * +message=API key must not be empty
    * +uiType=Password
    */
   api_key: string;
 }
 /**
  * +label=Groq Model
+ * +icon=groq
  */
 export interface GroqModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/groq
    */
   type: "integration/model/groq";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Groq model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Groq model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Groq model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Groq
+ * +label=Groq Provider Account
  * +icon=groq
  */
 export interface GroqProviderAccount {
@@ -5854,15 +8135,28 @@ export interface GroqProviderAccount {
    */
   type: "provider-account/groq";
   /**
-   * +uiProps={"disableEdit":true}
    * +label=Name
+   * +sort=100
+   * +usage=The name of the Groq provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
    */
   name: string;
   auth_data: GroqKeyAuth;
   /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Groq provider account
    * +uiType=IntegrationsGroup
    */
   integrations?: GroqIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
 }
 /**
  * +label=H2O
@@ -5891,74 +8185,6 @@ export interface HeaderMatch {
    * +label=Value
    */
   exact_match: string;
-}
-/**
- * +label=OpenAI
- * +icon=openai
- */
-export interface OpenaiProviderAccount {
-  /**
-   * +value=provider-account/openai
-   */
-  type: "provider-account/openai";
-  /**
-   * +uiProps={"disableEdit":true}
-   */
-  name: string;
-  auth_data: OpenaiApiKeyAuth;
-  base_url?: string;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations: OpenAIIntegrations[];
-}
-/**
- * +label=OpenAI API Key Auth
- */
-export interface OpenaiApiKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=100
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
- * +label=OpenAI Model
- * +icon=openai
- */
-export interface OpenAIIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
-   * +value=integration/model/openai
-   */
-  type: "integration/model/openai";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   * +uiType=Select
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
 }
 /**
  * +label=Jfrog
@@ -6235,394 +8461,6 @@ export interface QuayIntegrations {
   authorized_subjects?: string[];
 }
 /**
- * +label=Nomic
- * +icon=nomic
- */
-export interface NomicProviderAccount {
-  /**
-   * +value=provider-account/nomic
-   */
-  type: "provider-account/nomic";
-  /**
-   * +uiProps={"disableEdit":true}
-   * +label=Name
-   */
-  name: string;
-  auth_data: NomicKeyAuth;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations?: NomicIntegrations[];
-}
-/**
- * +label=Nomic API Key Auth
- */
-export interface NomicKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=100
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
- * +label=Nomic Model
- */
-export interface NomicIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
-   * +value=integration/model/nomic
-   */
-  type: "integration/model/nomic";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
- * +label=Palm
- * +icon=palm
- */
-export interface PalmProviderAccount {
-  /**
-   * +value=provider-account/palm
-   */
-  type: "provider-account/palm";
-  /**
-   * +uiProps={"disableEdit":true}
-   * +label=Name
-   */
-  name: string;
-  auth_data: PalmKeyAuth;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations?: PalmIntegrations[];
-}
-/**
- * +label=Palm API Key Auth
- */
-export interface PalmKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=100
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
- * +label=Palm Model
- */
-export interface PalmIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
-   * +value=integration/model/palm
-   */
-  type: "integration/model/palm";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
- * +label=Perplexity-ai
- * +icon=perplexity-ai
- */
-export interface PerplexityAIProviderAccount {
-  /**
-   * +value=provider-account/perplexity-ai
-   */
-  type: "provider-account/perplexity-ai";
-  /**
-   * +uiProps={"disableEdit":true}
-   * +label=Name
-   */
-  name: string;
-  auth_data: PerplexityAIKeyAuth;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations?: PerplexityIntegrations[];
-}
-/**
- * +label=PerplexityAI API Key Auth
- */
-export interface PerplexityAIKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=100
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
- * +label=Perplexity Model
- */
-export interface PerplexityIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
-   * +value=integration/model/perplexity-ai
-   */
-  type: "integration/model/perplexity-ai";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
- * +label=Mistral-ai
- * +icon=mistral-ai
- */
-export interface MistralAIProviderAccount {
-  /**
-   * +value=provider-account/mistral-ai
-   */
-  type: "provider-account/mistral-ai";
-  /**
-   * +uiProps={"disableEdit":true}
-   * +label=Name
-   */
-  name: string;
-  auth_data: MistralAIKeyAuth;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations?: MistralIntegrations[];
-}
-/**
- * +label=MistralAI API Key Auth
- */
-export interface MistralAIKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=100
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
- * +label=MistralAI Model
- */
-export interface MistralIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
-   * +value=integration/model/mistral-ai
-   */
-  type: "integration/model/mistral-ai";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
- * +label=Together-ai
- * +icon=together-ai
- */
-export interface TogetherAIProviderAccount {
-  /**
-   * +value=provider-account/together-ai
-   */
-  type: "provider-account/together-ai";
-  /**
-   * +uiProps={"disableEdit":true}
-   * +label=Name
-   */
-  name: string;
-  auth_data: TogetherAIKeyAuth;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations?: TogetherAIIntegrations[];
-}
-/**
- * +label=TogetherAI API Key Auth
- */
-export interface TogetherAIKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +sort=100
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
- * +label=TogetherAI Model
- */
-export interface TogetherAIIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
-   * +value=integration/model/together-ai
-   */
-  type: "integration/model/together-ai";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
- * +label=Ollama
- * +icon=ollama
- */
-export interface OllamaProviderAccount {
-  /**
-   * +value=provider-account/ollama
-   */
-  type: "provider-account/ollama";
-  /**
-   * +uiProps={"disableEdit":true}
-   * +label=Name
-   */
-  name: string;
-  auth_data: OllamaKeyAuth;
-  /**
-   * +uiType=IntegrationsGroup
-   */
-  integrations: OllamaIntegrations[];
-}
-/**
- * +label=Ollama API Key Auth
- */
-export interface OllamaKeyAuth {
-  custom_host: string;
-}
-/**
- * +label=Ollama Model
- */
-export interface OllamaIntegrations {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
-   * +value=integration/model/ollama
-   */
-  type: "integration/model/ollama";
-  /**
-   * +usage=Specify the type of the model
-   * +sort=4
-   */
-  model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
-}
-/**
  * +label=Slack Provider Account
  * +icon=slack
  */
@@ -6823,6 +8661,80 @@ export interface WebhookBearerAuth {
    */
   prefix: string;
 }
+/**
+ * +label=PagerDuty Provider Account
+ * +icon=https://assets.production.truefoundry.com/pagerduty.png
+ */
+export interface PagerDutyProviderAccount {
+  /**
+   * +value=provider-account/pagerduty
+   */
+  type: "provider-account/pagerduty";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the PagerDuty provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +label=Integrations
+   * +sort=500
+   * +usage=List of integrations that are associated with the PagerDuty provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: PagerDutyIntegrations[];
+}
+/**
+ * +label=PagerDuty Integration
+ * +icon=https://assets.production.truefoundry.com/pagerduty.png
+ */
+export interface PagerDutyIntegrations {
+  /**
+   * +value=integration/notification-channel/pagerduty
+   */
+  type: "integration/notification-channel/pagerduty";
+  /**
+   * +label=Display Name
+   * +sort=100
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +uiProps={"disableEdit":false}
+   */
+  name: string;
+  auth_data: PagerDutyIntegrationKeyAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=10005
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=PagerDuty Credentails
+ */
+export interface PagerDutyIntegrationKeyAuth {
+  /**
+   * +value=pagerduty-integration-auth
+   */
+  type: "pagerduty-integration-auth";
+  /**
+   * +label=Integration Key
+   * +sort=100
+   * +usage=The integration key for the PagerDuty integration
+   * +uiType=Password
+   */
+  integration_key: string;
+  /**
+   * +label=Integration URL
+   * +sort=200
+   * +usage=The integration URL for the PagerDuty integration
+   * +docs=The integration URL for the PagerDuty integration. This is the URL that will be used to send events to PagerDuty. eg. https://events.pagerduty.com/generic/2010-04-15/create_event.json
+   * +placeholder=https://events.pagerduty.com/generic/2010-04-15/create_event.json
+   */
+  integration_url: string;
+}
 export interface VirtualAccountManifest {
   /**
    * +label=Name
@@ -6919,6 +8831,361 @@ export interface WorkspaceManifest {
   permissions?: Permissions[];
 }
 /**
+ * +label=Mistral AI Model
+ * +icon=mistral-ai
+ */
+export interface MistralAIIntegrations {
+  /**
+   * +value=integration/model/mistral-ai
+   */
+  type: "integration/model/mistral-ai";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Mistral AI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Mistral AI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Mistral AI model
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Perplexity AI Model
+ * +icon=perplexity-ai
+ */
+export interface PerplexityIntegrations {
+  /**
+   * +value=integration/model/perplexity-ai
+   */
+  type: "integration/model/perplexity-ai";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Perplexity AI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Perplexity AI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Perplexity AI model
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Together AI Model
+ * +icon=together-ai
+ */
+export interface TogetherAIIntegrations {
+  /**
+   * +value=integration/model/together-ai
+   */
+  type: "integration/model/together-ai";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Together AI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Together AI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Together AI model
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Nomic Model
+ * +icon=nomic
+ */
+export interface NomicIntegrations {
+  /**
+   * +value=integration/model/nomic
+   */
+  type: "integration/model/nomic";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Nomic model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Nomic model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Nomic model
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=PaLM Model
+ * +icon=palm
+ */
+export interface PalmIntegrations {
+  /**
+   * +value=integration/model/palm
+   */
+  type: "integration/model/palm";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this PaLM model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the PaLM model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the PaLM model
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Ollama Model
+ * +icon=ollama
+ */
+export interface OllamaIntegrations {
+  /**
+   * +value=integration/model/ollama
+   */
+  type: "integration/model/ollama";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Ollama model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Ollama model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Ollama model
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=OpenAI Model
+ * +icon=openai
+ */
+export interface OpenAIIntegrations {
+  /**
+   * +value=integration/model/openai
+   */
+  type: "integration/model/openai";
+  /**
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this OpenAI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the OpenAI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the OpenAI model
+   * +uiType=Select
+   */
+  model_types: ModelType[];
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +sort=5
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=PagerDuty Integration
+ * +icon=https://assets.production.truefoundry.com/pagerduty.png
+ */
+export interface PagerDutyIntegration {
+  /**
+   * +value=integration/notification-channel/pagerduty
+   */
+  type: "integration/notification-channel/pagerduty";
+  /**
+   * +label=Display Name
+   * +sort=100
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +uiProps={"disableEdit":false}
+   */
+  name: string;
+  auth_data: PagerDutyIntegrationKeyAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=10005
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Self Hosted Model Integration
+ * +icon=puzzle-piece
+ */
+export interface SelfHostedModel {
+  /**
+   * +value=integration/model/self-hosted-model
+   */
+  type: "integration/model/self-hosted-model";
+  /**
+   * +sort=1
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Hosted Model Name
+   * +sort=2
+   * +usage=The name of the hosted model
+   */
+  hosted_model_name: string;
+  /**
+   * +sort=3
+   * +message=enter valid https/http URL that should not end with trailing slash
+   */
+  url: string;
+  /**
+   * +sort=4
+   * +label=Model Server Type
+   * +usage=The type of model server being used
+   */
+  model_server: "vllm-openai" | "tei" | "infinity" | "nemo-retriever";
+  /**
+   * +uiType=Hidden
+   */
+  tfy_application_id?: string;
+  /**
+   * +usage=Specify the type of the model
+   * +sort=4
+   */
+  model_types: ModelType[];
+  /**
+   * +label=Auth Data
+   * +usage=SelfHostedModel authentication data for the integration.
+   * +sort=300
+   */
+  auth_data?: CustomBasicAuth | CustomBearerAuth;
+  /**
+   * +label=SelfHostedModel Headers
+   * +usage=SelfHostedModel headers for the integration. Forwarded to the provider as is. For example: `{"Authorization": "APIKey <token>"}`
+   * +sort=500
+   */
+  headers?: {
+    [k: string]: string;
+  };
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
  * +docs=Describes the configuration for the worflow
  */
 export interface Workflow {
@@ -6961,13 +9228,6 @@ export interface Workflow {
 export interface WorkflowAlert {
   notification_target?: NotificationTarget;
   /**
-   * +label=Alert Events
-   * +usage=Specify the events to send alerts for, it should be one of the following: SUCCEEDED, FAILED, ABORTED, TIMED_OUT
-   * +sort=670
-   * +uiType=Hidden
-   */
-  events?: WorkflowEvent[];
-  /**
    * +label=On Completion
    * +usage=Send an alert when the job completes
    * +sort=680
@@ -6993,7 +9253,12 @@ export interface SparkJob {
    * +sort=2
    */
   name: string;
-  image: SparkImage;
+  /**
+   * +label=Deploy a Docker image & Specify Spark Version
+   * +usage=The image to use for driver and executors. Must have spark installed. Spark version must match the version in the image.
+   * +sort=500
+   */
+  image: SparkImage | SparkImageBuild;
   /**
    * +label=Entrypoint
    * +sort=1000
@@ -7001,7 +9266,8 @@ export interface SparkJob {
   entrypoint:
     | SparkJobPythonEntrypoint
     | SparkJobScalaEntrypoint
-    | SparkJobJavaEntrypoint;
+    | SparkJobJavaEntrypoint
+    | SparkJobPythonNotebookEntrypoint;
   driver_config: SparkDriverConfig;
   executor_config: SparkExecutorConfig;
   /**
@@ -7046,14 +9312,14 @@ export interface SparkJob {
 }
 /**
  * +docs=Describes that we are using a pre-built image stored in a Docker Image registry
- * +label=Docker Image (Deploy an existing image)
+ * +label=Deploy an existing image
  * +icon=fa-brands fa-docker:#0db7ed
  */
 export interface SparkImage {
   /**
-   * +value=image
+   * +value=spark-image
    */
-  type: "image";
+  type: "spark-image";
   /**
    * --- Spark Specific Field ---
    * +label=Spark Version
@@ -7081,6 +9347,64 @@ export interface SparkImage {
   docker_registry?: string;
 }
 /**
+ * +docs=Describes that we are building a new image based on the spec
+ * +label=Build a new image
+ * +icon=fa-brands fa-docker:#0db7ed
+ * TODO (gw): Fix sorting for this such that it looks similar to SparkImage
+ */
+export interface SparkImageBuild {
+  /**
+   * +value=spark-image-build
+   */
+  type: "spark-image-build";
+  /**
+   * +docs=FQN of the container registry. You can the FQN of your desired container registry (or add one)
+   * in the  Integrations page[Integrations](https://app.truefoundry.tech/integrations?tab=docker-registry) page
+   * +label=Docker Registry
+   * +usage=FQN of the container registry. If you can't find your registry here,
+   * add it through the [Integrations](/integrations?tab=docker-registry) page
+   * +sort=1002
+   */
+  docker_registry?: string;
+  /**
+   * TODO (gw): The following is a hack till the uiType GitSelect is fixed fron frontend
+   * +label=Fetch source code
+   * +sort=1003
+   */
+  build_source: GitSource | RemoteSource;
+  build_spec: SparkBuild;
+}
+/**
+ * +docs=Describes that we are using python to build a container image with a specific python version and pip packages installed.
+ * +label=Build specification
+ * +icon=fa-brands fa-python:#306998
+ */
+export interface SparkBuild {
+  /**
+   * +value=tfy-spark-buildpack
+   */
+  type: "tfy-spark-buildpack";
+  /**
+   * --- Spark Specific Field ---
+   * +label=Spark Version
+   * +usage=Spark version should match the spark version installed in the image.
+   * +sort=1001
+   */
+  spark_version: string;
+  /**
+   * +label=Path to build context
+   * +usage=Build path relative to project root path.
+   */
+  build_context_path: string;
+  /**
+   * `Path to build context`
+   * +label=Path to requirements
+   * +usage=Path to `requirements.txt` relative to
+   * `Path to build context`
+   */
+  requirements_path?: string;
+}
+/**
  * +label=python
  */
 export interface SparkJobPythonEntrypoint {
@@ -7090,7 +9414,7 @@ export interface SparkJobPythonEntrypoint {
   type: "python";
   /**
    * +label=Main Application File
-   * +usage=The main application file to be executed by the spark job.
+   * +usage=The main application file to be executed by the spark job. Relative path in case of git repository.
    * +message=Filename should have .py extension
    * +sort=5
    * +placeholder=For example: local:///path/to/file.py, s3:///bucket/path/to/file.py, etc.
@@ -7166,10 +9490,26 @@ export interface SparkJobJavaEntrypoint {
   arguments?: string;
 }
 /**
+ * +label=python notebook
+ */
+export interface SparkJobPythonNotebookEntrypoint {
+  /**
+   * +value=python-notebook
+   */
+  type: "python-notebook";
+  /**
+   * +label=Main Application File
+   * +usage=The main application file to be executed by the spark job. Relative path in case of git repository.
+   * +message=Filename should have .py extension
+   * +sort=5
+   * +placeholder=For example: local:///path/to/file.py, s3:///bucket/path/to/file.py, etc.
+   */
+  main_application_file: string;
+}
+/**
  * +label=Driver Config
  */
 export interface SparkDriverConfig {
-  ui_endpoint: Endpoint;
   resources?: Resources;
 }
 /**
@@ -7639,35 +9979,35 @@ export interface Policy {
   type: "policy";
   /**
    * +label=Name
-   * +usage=Name of the Policy
+   * +usage=Unique identifier of the policy across the organisation
    * +sort=2
    * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    */
   name: string;
   /**
-   * +label=Policy Action
-   * +usage=Defines if the policy mutates or validates resources
-   * +sort=3
-   */
-  operation: PolicyMutationOperation | PolicyValidationOperation;
-  /**
-   * +label=Mode
-   * +usage=Mode of the policy: `Audit` logs all policy evaluations without blocking deployments, `Enforce` blocks deployments if the policy fails, and `Disabled` deactivates the policy.
-   * +uiType=MultiSelectPills
-   * +sort=6
-   */
-  mode: "audit" | "enforce" | "disabled";
-  /**
    * +label=Description
-   * +usage=Description of the Policy
-   * +sort=7
+   * +usage=Description of the policy that explains what the policy does, its purpose, and how it affects resources. This helps other users understand the policy's behavior and impact.
+   * +sort=3
    * ++uiProps={"descriptionInline":true}
    * +message=Description must be between 1 byte and 1024 bytes
    */
   description: string;
   /**
+   * +label=Policy Action
+   * +usage=Defines if the policy validates or mutates resources. Validation policies check TrueFoundry manifests to ensure they meet conditions and can block deployments. Mutation policies modify Kubernetes manifests before they're applied to the cluster. See this [documentation](https://docs.truefoundry.com/docs/applying-custom-policies#applying-custom-policies) for more details.
+   * +sort=4
+   */
+  operation: PolicyMutationOperation | PolicyValidationOperation;
+  /**
+   * +label=Mode
+   * +usage=Mode of the policy: `Audit` logs all policy evaluations without blocking deployments. `Enforce` blocks deployments if the policy fails. `Disabled` deactivates the policy.
+   * +uiType=MultiSelectPills
+   * +sort=6
+   */
+  mode: "audit" | "enforce" | "disabled";
+  /**
    * +label=Entities
-   * +usage=Types of Entities this policy applies to
+   * +usage=Types of applications this policy applies to
    * +uiType=MultiSelect
    * +sort=8
    */
@@ -7702,7 +10042,7 @@ export interface PolicyMutationOperation {
   type: "mutate";
   /**
    * +label=Execution Order
-   * +usage=Defines the execution sequence for mutation policies. Lower values execute first.
+   * +usage=Determines the sequence in which mutation policies are executed. Policies with lower order value run first, followed by higher value. For example, a policy with order 10 runs before one with order 20. This is crucial when multiple mutation policies need to run in a specific sequence. The order must be between 1 and 100.
    * +sort=5
    * +message=Order must be a positive integer less than or equal to 100
    * +uiProps={"descriptionInline":true}
@@ -7762,6 +10102,529 @@ export interface TracingProject {
   ml_repo?: string;
 }
 /**
+ * +label=Mistral AI Provider Account
+ * +icon=mistral-ai
+ */
+export interface MistralAIProviderAccount {
+  /**
+   * +value=provider-account/mistral-ai
+   */
+  type: "provider-account/mistral-ai";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Mistral AI provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: MistralAIKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Mistral AI provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations?: MistralAIIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Mistral AI API Key Auth
+ * +icon=mistral-ai
+ */
+export interface MistralAIKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   * +usage=The API key for Mistral AI authentication
+   * +message=API key must not be empty
+   * +uiType=Password
+   */
+  api_key: string;
+}
+/**
+ * +label=Perplexity AI Provider Account
+ * +icon=perplexity-ai
+ */
+export interface PerplexityAIProviderAccount {
+  /**
+   * +value=provider-account/perplexity-ai
+   */
+  type: "provider-account/perplexity-ai";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Perplexity AI provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: PerplexityAIKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Perplexity AI provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations?: PerplexityIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Perplexity AI API Key Auth
+ * +icon=perplexity-ai
+ */
+export interface PerplexityAIKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   * +usage=Your Perplexity AI API key for authentication
+   * +message=API key must not be empty
+   * +uiType=Password
+   */
+  api_key: string;
+}
+/**
+ * +label=Together AI Provider Account
+ * +icon=together-ai
+ */
+export interface TogetherAIProviderAccount {
+  /**
+   * +value=provider-account/together-ai
+   */
+  type: "provider-account/together-ai";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Together AI provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: TogetherAIKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Together AI provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations?: TogetherAIIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Together AI API Key Auth
+ * +icon=together-ai
+ */
+export interface TogetherAIKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   * +usage=Your Together AI API key for authentication
+   * +message=API key must not be empty
+   * +uiType=Password
+   */
+  api_key: string;
+}
+/**
+ * +label=Nomic Provider Account
+ * +icon=nomic
+ */
+export interface NomicProviderAccount {
+  /**
+   * +value=provider-account/nomic
+   */
+  type: "provider-account/nomic";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Nomic provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: NomicKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Nomic provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations?: NomicIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Nomic API Key Auth
+ * +icon=nomic
+ */
+export interface NomicKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   * +usage=The API key for Nomic authentication
+   * +message=API key must not be empty
+   * +uiType=Password
+   */
+  api_key: string;
+}
+/**
+ * +label=PaLM Provider Account
+ * +icon=palm
+ */
+export interface PalmProviderAccount {
+  /**
+   * +value=provider-account/palm
+   */
+  type: "provider-account/palm";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the PaLM provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: PalmKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the PaLM provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations?: PalmIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=PaLM API Key Auth
+ * +icon=palm
+ */
+export interface PalmKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   * +usage=Your PaLM API key for authentication
+   * +message=API key must not be empty
+   * +uiType=Password
+   */
+  api_key: string;
+}
+/**
+ * +label=Ollama Provider Account
+ * +icon=ollama
+ */
+export interface OllamaProviderAccount {
+  /**
+   * +value=provider-account/ollama
+   */
+  type: "provider-account/ollama";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Ollama provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: OllamaKeyAuth;
+  /**
+   * +label=Integrations
+   * +sort=300
+   * +usage=List of integrations that are associated with the Ollama provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: OllamaIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=400
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Ollama API Key Auth
+ * +icon=ollama
+ */
+export interface OllamaKeyAuth {
+  /**
+   * +label=Custom Host
+   * +sort=100
+   * +usage=The custom host URL for Ollama API
+   * +message=Host URL must not be empty
+   */
+  custom_host: string;
+}
+/**
+ * +label=OpenAI Provider Account
+ * +icon=openai
+ */
+export interface OpenaiProviderAccount {
+  /**
+   * +value=provider-account/openai
+   */
+  type: "provider-account/openai";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the OpenAI provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  auth_data: OpenaiApiKeyAuth;
+  /**
+   * +label=Base URL
+   * +sort=300
+   * +usage=Optional custom base URL for OpenAI API
+   * +message=Base URL must not be empty
+   */
+  base_url?: string;
+  /**
+   * +label=Integrations
+   * +sort=400
+   * +usage=List of integrations that are associated with the OpenAI provider account
+   * +uiType=IntegrationsGroup
+   */
+  integrations: OpenAIIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=500
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=OpenAI API Key Auth
+ * +icon=openai
+ */
+export interface OpenaiApiKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   * +usage=Your OpenAI API key for authentication
+   * +message=API key must not be empty
+   * +uiType=Password
+   */
+  api_key: string;
+}
+/**
+ * +label=Self Hosted
+ * +icon=puzzle-piece
+ */
+export interface SelfHostedModelProviderAccount {
+  /**
+   * +value=provider-account/self-hosted-model
+   */
+  type: "provider-account/self-hosted-model";
+  /**
+   * +uiProps={"disableEdit":true}
+   * +label=Name
+   * +usage=The name of the provider account.
+   * +sort=100
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Integrations
+   * +usage=List of integrations that are associated with the provider account.
+   * +sort=400
+   * +uiType=IntegrationsGroup
+   */
+  integrations: SelfHostedModelIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=500
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=Self Hosted Model Integration
+ * +icon=puzzle-piece
+ */
+export interface SelfHostedModelIntegrations {
+  /**
+   * +value=integration/model/self-hosted-model
+   */
+  type: "integration/model/self-hosted-model";
+  /**
+   * +sort=1
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Hosted Model Name
+   * +sort=2
+   * +usage=The name of the hosted model
+   */
+  hosted_model_name: string;
+  /**
+   * +sort=3
+   * +message=enter valid https/http URL that should not end with trailing slash
+   */
+  url: string;
+  /**
+   * +sort=4
+   * +label=Model Server Type
+   * +usage=The type of model server being used
+   */
+  model_server: "vllm-openai" | "tei" | "infinity" | "nemo-retriever";
+  /**
+   * +uiType=Hidden
+   */
+  tfy_application_id?: string;
+  /**
+   * +usage=Specify the type of the model
+   * +sort=4
+   */
+  model_types: ModelType[];
+  /**
+   * +label=Auth Data
+   * +usage=SelfHostedModel authentication data for the integration.
+   * +sort=300
+   */
+  auth_data?: CustomBasicAuth | CustomBearerAuth;
+  /**
+   * +label=SelfHostedModel Headers
+   * +usage=SelfHostedModel headers for the integration. Forwarded to the provider as is. For example: `{"Authorization": "APIKey <token>"}`
+   * +sort=500
+   */
+  headers?: {
+    [k: string]: string;
+  };
+  cost?: ModelCostMetric;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=600
+   * +uiType=Hidden
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=MCPServer Provider Account
+ * +icon=puzzle-piece
+ */
+export interface MCPServerProviderAccount {
+  /**
+   * +value=provider-account/hosted-mcp-server
+   */
+  type: "provider-account/hosted-mcp-server";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the MCPServer provider account
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +label=Integrations
+   * +usage=List of integrations that are associated with the provider account.
+   * +sort=400
+   * +uiType=IntegrationsGroup
+   */
+  integrations: MCPServerIntegrations[];
+  /**
+   * +label=Collaborators
+   * +sort=500
+   * +usage=List of users who have access to this provider account
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+}
+/**
+ * +label=MCPServer Integration
+ * +icon=puzzle-piece
+ */
+export interface MCPServerIntegrations {
+  /**
+   * +value=integration/mcp-server/hosted-mcp-server
+   */
+  type: "integration/mcp-server/hosted-mcp-server";
+  /**
+   * +label=Name
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=100
+   */
+  name: string;
+  /**
+   * +label=Description
+   * +uiType=TextArea
+   * +usage=The Description of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=200
+   * +uiProps={"descriptionInline":true}
+   */
+  description: string;
+  /**
+   * +label=URL
+   * +usage=The endpoint URL for the MCP server.
+   * +sort=300
+   */
+  url: string;
+  auth_data?: MCPServerAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=500
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
  * +label=Jfrog Artifacts Registry
  * +icon=jfrog
  */
@@ -7793,98 +10656,154 @@ export interface JfrogArtifactsRegistry {
   authorized_subjects?: string[];
 }
 /**
- * +label=MistralAI Model
+ * +label=MCPServer Integration
+ * +icon=puzzle-piece
  */
-export interface MistralAIModel {
+export interface MCPServerIntegration {
   /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +value=integration/mcp-server/hosted-mcp-server
+   */
+  type: "integration/mcp-server/hosted-mcp-server";
+  /**
+   * +label=Name
+   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=100
    */
   name: string;
   /**
-   * +sort=2
+   * +label=Description
+   * +uiType=TextArea
+   * +usage=The Description of the integration that will be displayed in the TrueFoundry UI.
+   * +sort=200
+   * +uiProps={"descriptionInline":true}
    */
-  model_id: string;
+  description: string;
+  /**
+   * +label=URL
+   * +usage=The endpoint URL for the MCP server.
+   * +sort=300
+   */
+  url: string;
+  auth_data?: MCPServerAuth;
+  /**
+   * +label=Access Control
+   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
+   * +sort=500
+   * +uiType=AuthorizedSubjects
+   */
+  authorized_subjects?: string[];
+}
+/**
+ * +label=Mistral AI Model
+ * +icon=mistral-ai
+ */
+export interface MistralAIModel {
   /**
    * +value=integration/model/mistral-ai
    */
   type: "integration/model/mistral-ai";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Mistral AI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Mistral AI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Mistral AI model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
  * +label=Nomic Model
+ * +icon=nomic
  */
 export interface NomicModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/nomic
    */
   type: "integration/model/nomic";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Nomic model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Nomic model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Nomic model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
  * +label=Ollama Model
+ * +icon=ollama
  */
 export interface OllamaModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/ollama
    */
   type: "integration/model/ollama";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Ollama model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Ollama model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Ollama model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -7894,95 +10813,112 @@ export interface OllamaModel {
  */
 export interface OpenAIModel {
   /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
-  /**
    * +value=integration/model/openai
    */
   type: "integration/model/openai";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this OpenAI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the OpenAI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the OpenAI model
    * +uiType=Select
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Palm Model
+ * +label=PaLM Model
+ * +icon=palm
  */
 export interface PalmModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/palm
    */
   type: "integration/model/palm";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this PaLM model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the PaLM model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the PaLM model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
 /**
- * +label=Perplexity Model
+ * +label=Perplexity AI Model
+ * +icon=perplexity-ai
  */
 export interface PerplexityAIModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/perplexity-ai
    */
   type: "integration/model/perplexity-ai";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Perplexity AI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Perplexity AI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Perplexity AI model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
@@ -8048,34 +10984,40 @@ export interface TTLRegistry {
   authorized_subjects?: string[];
 }
 /**
- * +label=TogetherAI Model
+ * +label=Together AI Model
+ * +icon=together-ai
  */
 export interface TogetherAIModel {
-  /**
-   * +label=Display Name
-   * +sort=1
-   * +message=3 to 32 characters long alphanumeric word, may contain - in between, cannot start with a number
-   */
-  name: string;
-  /**
-   * +sort=2
-   */
-  model_id: string;
   /**
    * +value=integration/model/together-ai
    */
   type: "integration/model/together-ai";
   /**
-   * +usage=Specify the type of the model
-   * +sort=4
+   * +label=Display Name
+   * +sort=1
+   * +usage=Name to identify this Together AI model in the UI
+   * +message=2 to 62 characters long alphanumeric word, may contain - in between, cannot start with a number
+   */
+  name: string;
+  /**
+   * +label=Model ID
+   * +sort=2
+   * +usage=The name of the Together AI model to use
+   * +message=Model ID must not be empty
+   */
+  model_id: string;
+  /**
+   * +label=Model Types
+   * +sort=3
+   * +usage=Specify the type of the Together AI model
    */
   model_types: ModelType[];
-  cost?: PerThousandTokensCostMetric | PerThousandEmbeddingTokensCostMetric;
+  cost?: ModelCostMetric;
   /**
    * +label=Access Control
+   * +sort=5
    * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=600
-   * +uiType=AuthorizedSubjects
+   * +uiType=Hidden
    */
   authorized_subjects?: string[];
 }
