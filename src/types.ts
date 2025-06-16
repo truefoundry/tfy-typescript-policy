@@ -1,4 +1,13 @@
-import { Job, Notebook, PolicyEntityTypes, Service, SSHServer, Workflow, EnvironmentManifest, AsyncService } from './models';
+import {
+  AsyncService,
+  EnvironmentManifest,
+  Job,
+  Notebook,
+  PolicyEntityTypes,
+  Service,
+  SSHServer,
+  Workflow,
+} from './models';
 
 export declare class V1OwnerReference {
   'apiVersion': string;
@@ -80,13 +89,7 @@ export interface KubernetesObject {
   metadata?: V1ObjectMeta;
 }
 export interface KubernetesObjectWithSpec extends KubernetesObject {
-  spec: Record<string,any>;
-}
-
-export interface ValidationInput {
-  manifest: ApplicationManifest;
-  flyteTasks?: Record<string,any>;
-  context: ValidationContext;
+  spec: Record<string, any>;
 }
 
 export enum SubjectType {
@@ -101,6 +104,11 @@ export interface Subject {
   subjectDisplayName?: string;
 }
 
+export interface ValidationInput {
+  manifest: ApplicationManifest;
+  flyteTasks?: Record<string, any>;
+  context: ValidationContext;
+}
 export interface ValidationContext {
   entityType: PolicyEntityTypes;
   workspaceName: string;
@@ -112,19 +120,22 @@ export interface ValidationContext {
   activeDeployment?: {
     manifest: object;
   };
+  lastDeployment?: {
+    manifest: object;
+  };
 }
 
 export type ApplicationManifest = Service | AsyncService | Job | Notebook | SSHServer | Workflow;
 
 export interface MutationInput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];
-  flyteTasks?: Record<string,any>;
+  flyteTasks?: Record<string, any>;
   context: MutationContext;
 }
 
-export interface MutationOutput {
+export class MutationOutput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];
-  flyteTasks?: Record<string,any>;
+  flyteTasks?: Record<string, any>;
 }
 
 export interface MutationContext extends ValidationContext {
