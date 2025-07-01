@@ -1,6 +1,7 @@
 import {
   AsyncService,
   EnvironmentManifest,
+  Helm,
   Job,
   Notebook,
   PolicyEntityTypes,
@@ -97,11 +98,21 @@ export enum SubjectType {
   team = 'team',
   serviceaccount = 'serviceaccount',
 }
+export enum ControllerNameForSystemUser {
+  TFY_AUTOPILOT = 'tfy-autopilot',
+  TFY_AUTODEPLOY = 'tfy-autodeploy',
+  TFY_AUTOUPGRADE = 'tfy-autoupgrade',
+  TFY_SYSTEM = 'tfy-system',
+  TFY_CULLING_CONTROLLER = 'tfy-culling-controller',
+}
+
 export interface Subject {
   subjectId: string;
   subjectType: SubjectType;
   subjectSlug?: string;
   subjectDisplayName?: string;
+  subjectPatName?: string;
+  subjectControllerName?: ControllerNameForSystemUser;
 }
 
 export interface ValidationInput {
@@ -125,7 +136,7 @@ export interface ValidationContext {
   };
 }
 
-export type ApplicationManifest = Service | AsyncService | Job | Notebook | SSHServer | Workflow;
+export type ApplicationManifest = Service | AsyncService | Job | Notebook | SSHServer | Workflow | Helm;
 
 export interface MutationInput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];

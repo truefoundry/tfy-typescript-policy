@@ -85,48 +85,7 @@ export type AwsEksRegions =
   | "sa-east-1"
   | "us-gov-east-1"
   | "us-gov-west-1";
-export type Agent = BaseArtifactVersion & {} & {
-  /**
-   * +value=agent
-   * +usage=Type of the entity
-   */
-  type?: "agent";
-  /**
-   * +sort=100
-   * +uiType=TextArea
-   * +label=Goal
-   * +usage=Short form description. Will be used as `description` when this agent is used as a tool.
-   * +uiProps={"descriptionInline":true}
-   */
-  goal?: string;
-  /**
-   * `instruction` is the system prompt for now. (2.5 * 1024)
-   * +sort=150
-   * +uiType=AgentInstructions
-   * +uiProps={"helpText":"Use the syntax ${Tool FQN} to reference a tool, and ${AGENT FQN} to reference another agent"}
-   * +label=Instructions
-   * +usage=Instructions for the agent to follow to achieve the goal
-   * +uiProps={"descriptionInline":true}
-   */
-  instruction?: string;
-  /**
-   * +sort=200
-   * +uiType=Hidden
-   * +label=Tools
-   * +usage=Tools available to the agent
-   * +uiProps={"descriptionInline":true}
-   */
-  available_tools?: string[];
-  /**
-   * +sort=300
-   * +uiType=EnabledModelSelector
-   * +uiProps={"searchable":true,"modelType":"chat","providerType":"openai"}
-   * +label=Model
-   * +usage=Model to use when running the agent
-   */
-  model_id?: string;
-};
-export type AgentOpenAPIToolWithFQN = AgentOpenAPITool & {} & {
+export type AgentOpenAPIToolManifestWithFQN = AgentOpenAPIToolManifest & {} & {
   /**
    * +usage=ID of the agent tool
    */
@@ -136,7 +95,7 @@ export type AgentOpenAPIToolWithFQN = AgentOpenAPITool & {} & {
    */
   fqn?: string;
 };
-export type AgentOpenAPITool = BaseArtifactVersion & {} & {
+export type AgentOpenAPIToolManifest = BaseArtifactVersion & {} & {
   /**
    * +value=openapi-tool
    * +usage=Type of the agent
@@ -186,7 +145,7 @@ export type AgentOpenAPITool = BaseArtifactVersion & {} & {
     [k: string]: string;
   };
 };
-export type AgentWithFQN = Agent & {} & {
+export type AgentManifestWithFQN = AgentManifest & {} & {
   /**
    * +usage=ID of the agent
    */
@@ -195,6 +154,47 @@ export type AgentWithFQN = Agent & {} & {
    * +usage=FQN of the agent
    */
   fqn?: string;
+};
+export type AgentManifest = BaseArtifactVersion & {} & {
+  /**
+   * +value=agent
+   * +usage=Type of the entity
+   */
+  type?: "agent";
+  /**
+   * +sort=100
+   * +uiType=TextArea
+   * +label=Goal
+   * +usage=Short form description. Will be used as `description` when this agent is used as a tool.
+   * +uiProps={"descriptionInline":true}
+   */
+  goal?: string;
+  /**
+   * `instruction` is the system prompt for now. (2.5 * 1024)
+   * +sort=150
+   * +uiType=AgentInstructions
+   * +uiProps={"helpText":"Use the syntax ${Tool FQN} to reference a tool, and ${AGENT FQN} to reference another agent"}
+   * +label=Instructions
+   * +usage=Instructions for the agent to follow to achieve the goal
+   * +uiProps={"descriptionInline":true}
+   */
+  instruction?: string;
+  /**
+   * +sort=200
+   * +uiType=Hidden
+   * +label=Tools
+   * +usage=Tools available to the agent
+   * +uiProps={"descriptionInline":true}
+   */
+  available_tools?: string[];
+  /**
+   * +sort=300
+   * +uiType=EnabledModelSelector
+   * +uiProps={"searchable":true,"modelType":"chat","providerType":"openai"}
+   * +label=Model
+   * +usage=Model to use when running the agent
+   */
+  model_id?: string;
 };
 export type NotificationTargetForAlertRule = Email | SlackBot | PagerDuty;
 export type AlertSeverity = "warning" | "critical";
@@ -270,7 +270,7 @@ export type NotificationTarget = Email | SlackWebhook | SlackBot;
  * +label=Artifact Version
  * +usage=Log a new Artifact Version containing files and folders with metadata
  */
-export type ArtifactVersion = BaseArtifactVersion & {} & {
+export type ArtifactManifest = BaseArtifactVersion & {} & {
   /**
    * +label=Type
    * +usage=Artifact Version
@@ -320,6 +320,51 @@ export type BudgetLimitUnit =
   | "tokens_per_day"
   | "tokens_per_month";
 /**
+ * +discriminator=role
+ * +usage=A single chat message turn
+ */
+export type ChatMessageTurn =
+  | SystemMessage
+  | AssistantMessage
+  | UserMessage
+  | ToolMessage
+  | DeveloperMessage;
+/**
+ * +label=Chat Prompt
+ * +usage=Fill in the information for opening a new chat prompt
+ */
+export type ChatPromptManifest = BaseArtifactVersion & {} & {
+  /**
+   * +label=Type
+   * +icon=fa-desktop:#326ce5
+   * +sort=3000
+   * +usage=Type of the prompt
+   * +value=chat_prompt
+   */
+  type?: "chat_prompt";
+  /**
+   * +sort=4000
+   * +label=Messages in the chat conversation
+   * +usage=List of messages in the chat conversation, must be non-empty
+   */
+  messages?: ChatMessageTurn[];
+  /**
+   * +label=Variables
+   * +usage=Variables referenced in messages and that can be replaced when running generation
+   * +sort=5000
+   */
+  variables?: {
+    [k: string]: string | null;
+  };
+  model_configuration?: ModelConfiguration;
+  /**
+   * +label=Tools
+   * +usage=List of tools to be used in the chat prompt
+   * +sort=7000
+   */
+  tools?: ToolSchema[];
+};
+/**
  * +docs=Describes the configuration for the code server
  */
 export type Codeserver = BaseWorkbenchInput & {} & {
@@ -343,10 +388,7 @@ export type OAuth2LoginProvider = BaseOAuth2Login & {} & {
    */
   type?: "oauth2";
 };
-export type MCPServerAuth =
-  | MCPServerHeaderAuth
-  | MCPServerOAuth2
-  | MCPServerSlackOAuth2;
+export type MCPServerAuth = MCPServerHeaderAuth | MCPServerOAuth2;
 /**
  * +label=OAuth2
  */
@@ -393,7 +435,8 @@ export type GCPRegion =
   | "europe-west9"
   | "me-central1"
   | "me-central2"
-  | "me-west1";
+  | "me-west1"
+  | "global";
 export type GatewayConfig =
   | RateLimitConfig
   | FallbackConfig
@@ -454,16 +497,19 @@ export type Input =
   | ApplicationSet
   | Intercept
   | MLRepoManifest
-  | ModelVersion
-  | ArtifactVersion
+  | ModelManifest
+  | ArtifactManifest
   | DataDirectory
   | GatewayConfig
   | TeamManifest
   | EnvironmentManifest
-  | Policy
+  | PolicyManifest
   | AlertConfig
-  | TracingProject
+  | TracingProjectManifest
   | ProviderAccounts
+  | ChatPromptManifest
+  | AgentOpenAPIToolManifest
+  | AgentManifest
   | AWSTerraformConfig
   | GCPTerraformConfig
   | AzureTerraformConfig
@@ -559,7 +605,7 @@ export type RStudio = BaseWorkbenchInput & {} & {
  * +label=Artifact Version
  * +usage=Log a new Model Version containing model files and folders with metadata
  */
-export type ModelVersion = BaseArtifactVersion & {} & {
+export type ModelManifest = BaseArtifactVersion & {} & {
   /**
    * +label=Type
    * +usage=Model Version
@@ -628,7 +674,8 @@ export type PolicyEntityTypes =
   | "job"
   | "notebook"
   | "ssh-server"
-  | "workflow";
+  | "workflow"
+  | "helm";
 export type PolicyActions = "apply";
 export type ProviderAccounts =
   | InfraProviderAccount
@@ -1479,6 +1526,28 @@ export interface AuthTypeAccessKey {
    */
   secret_key: string;
 }
+export interface AgentApp {
+  /**
+   * +value=agent-app
+   * +usage=Type of the app
+   */
+  type: "agent-app";
+  /**
+   * +label=Tools
+   * +usage=Tools available to the Agent app
+   */
+  tools: AgentOpenAPIToolManifestWithFQN[];
+  /**
+   * +label=Agents
+   * +usage=Agents available to the Agent app
+   */
+  agents: AgentManifestWithFQN[];
+  /**
+   * +label=Root Agent
+   * +usage=Root Agent for the app. This will be the first agent invoked
+   */
+  root_agent: string;
+}
 export interface BaseArtifactVersion {
   /**
    * +sort=1
@@ -1521,28 +1590,6 @@ export interface BaseArtifactVersion {
    * +uiType=Hidden
    */
   version?: number;
-}
-export interface AgentApp {
-  /**
-   * +value=agent-app
-   * +usage=Type of the app
-   */
-  type: "agent-app";
-  /**
-   * +label=Tools
-   * +usage=Tools available to the Agent app
-   */
-  tools: AgentOpenAPIToolWithFQN[];
-  /**
-   * +label=Agents
-   * +usage=Agents available to the Agent app
-   */
-  agents: AgentWithFQN[];
-  /**
-   * +label=Root Agent
-   * +usage=Root Agent for the app. This will be the first agent invoked
-   */
-  root_agent: string;
 }
 /**
  * +label=Blob Storage Reference
@@ -1834,7 +1881,7 @@ export interface AnthropicProviderAccount {
    * +label=Collaborators
    * +sort=400
    * +usage=List of users who have access to this provider account
-   * +uiType=Hidden
+   * +uiType=Collaborators
    */
   collaborators?: Collaborator[];
 }
@@ -3364,6 +3411,7 @@ export interface Job {
   trigger_on_deploy?: boolean;
   /**
    * +label=Params for input
+   * +uiType=ParamsInput
    * +usage=Configure params and pass it to create different job runs
    * +sort=400
    */
@@ -3683,18 +3731,6 @@ export interface GitHelmRepo {
    */
   value_files?: string[];
 }
-export interface ArtifactPath {
-  /**
-   * +label=Source path
-   * +usage=Local file or folder path
-   */
-  src: string;
-  /**
-   * +label=Destination path
-   * +usage=Relative path where the file or folder will be uploaded to in the artifact
-   */
-  dest?: string;
-}
 /**
  * +label=TrueFoundry Managed Source
  */
@@ -3740,6 +3776,104 @@ export interface LocalArtifactSource {
    * +usage=Array of ArtifactPath objects representing the source and destination paths
    */
   paths: ArtifactPath[];
+}
+export interface ArtifactPath {
+  /**
+   * +label=Source path
+   * +usage=Local file or folder path
+   */
+  src: string;
+  /**
+   * +label=Destination path
+   * +usage=Relative path where the file or folder will be uploaded to in the artifact
+   */
+  dest?: string;
+}
+/**
+ * +label=Assistant Message
+ * +usage=Assistant message turn
+ */
+export interface AssistantMessage {
+  /**
+   * +value=assistant
+   * +label=Role
+   * +usage=Role of the message
+   * +uiType=Ignore
+   */
+  role: "assistant";
+  /**
+   * +label=Content
+   * +usage=Text content for the assistant message
+   * +uiType=CodeEditor
+   * +uiProps={"language": "text"}
+   */
+  content?:
+    | string
+    | (TextContentPart | RefusalContentPart)[]
+    | BlobStorageReference;
+  /**
+   * +label=Tool Calls
+   * +usage=List of tool calls made by the assistant
+   */
+  tool_calls?: ToolCall[];
+  /**
+   * +label=Name
+   * +usage=Name of the assistant this message is from
+   */
+  name?: string;
+}
+/**
+ * +label=Text Content
+ * +usage=Text content for the message
+ */
+export interface TextContentPart {
+  /**
+   * +value=text
+   * +usage=Type of the content part
+   */
+  type: "text";
+  /**
+   * +label=Text
+   * +usage=Text content for the message
+   */
+  text: string | BlobStorageReference;
+}
+export interface RefusalContentPart {
+  /**
+   * +value=refusal
+   * +usage=Type of the content part
+   */
+  type: string;
+  /**
+   * +label=Refusal
+   * +usage=Reason
+   */
+  refusal: string;
+}
+export interface ToolCall {
+  /**
+   * +label=Type
+   * +usage=Type of the tool call
+   */
+  type: "function";
+  /**
+   * +label=ID
+   * +usage=Unique identifier for the tool call
+   */
+  id: string;
+  function: Function;
+}
+export interface Function {
+  /**
+   * +label=Name
+   * +usage=Name of the tool/function being called
+   */
+  name: string;
+  /**
+   * +label=Arguments
+   * +usage=Arguments passed to the tool/function
+   */
+  arguments: string;
 }
 /**
  * +label=AWS Access Key Based Auth
@@ -4616,6 +4750,22 @@ export interface AzureExistingNetwork {
   subnet_id: string;
 }
 /**
+ * +label=Create Manually
+ * +usage=To manually create the integration follow the instructions for each service you want to integrate.
+ *
+ * [Blob Storage](https://docs.truefoundry.com/docs/integration-provider-azure#azure-blob-storage-abs-integration)
+ *
+ * [Container Registry](https://docs.truefoundry.com/docs/integration-provider-azure#azure-container-registry-acr-integration)
+ *
+ * [AKS Integration](https://docs.truefoundry.com/docs/integration-provider-azure#azure-aks-integration)
+ */
+export interface AzureExistingPlatform {
+  /**
+   * +value=existing
+   */
+  type: "existing";
+}
+/**
  * +label=Use Existing Resource Group
  */
 export interface AzureExistingResourceGroup {
@@ -4993,6 +5143,30 @@ export interface AzureNewNetwork {
   subnet_cidr: string;
 }
 /**
+ * +label=Create via Terraform
+ */
+export interface AzureNewPlatform {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Enable TrueFoundry Blob Storage
+   * +usage=Enable blob storage feature in the platform
+   */
+  enable_blob_storage: boolean;
+  /**
+   * +label=Enable TrueFoundry Registry
+   * +usage=Enable docker registry feature in the platform
+   */
+  enable_container_registry: boolean;
+  /**
+   * +label=Enable Cluster Integration
+   * +usage=Enable cluster integration through terraform which requires Azure AD developer access (Entra ID). Disable this to create app registration manually. Follow here for [Manual Setup](https://docs.truefoundry.com/docs/integration-provider-azure#azure-aks-integration)
+   */
+  enable_cluster_integration: boolean;
+}
+/**
  * +label=Create New Resource Group
  */
 export interface AzureNewResourceGroup {
@@ -5132,7 +5306,6 @@ export interface AzureTerraformConfig {
    * +uiType=Hidden
    */
   version: string;
-  backend: AzureBackendConfig;
   /**
    * +label=Location
    * +usage=The Azure region where resources will be created
@@ -5156,9 +5329,17 @@ export interface AzureTerraformConfig {
    */
   network: AzureNewNetwork | AzureExistingNetwork;
   /**
+   * +label=Resource Tags
+   * +usage=Key-value pairs to tag Azure resources
+   * +sort=5
+   */
+  tags?: {
+    [k: string]: string | {};
+  };
+  /**
    * +label=Control Plane Configuration
-   * +sort=6
    * +uiType=Hidden
+   * +sort=60
    * +uiProps={"forwardJsonKey":true}
    */
   truefoundry_control_plane?: {
@@ -5194,6 +5375,7 @@ export interface AzureTerraformConfig {
   /**
    * +label=Compute Plane Configuration
    * +uiType=Ignore
+   * +sort=61
    * +uiProps={"forwardJsonKey":true}
    */
   truefoundry_compute_plane?: {
@@ -5212,33 +5394,11 @@ export interface AzureTerraformConfig {
     /**
      * +label=Platform Features
      * +usage=Enable or disable platform features
+     * +label=Platform Configuration
      */
-    platform_features: {
-      /**
-       * +label=Enable TrueFoundry Blob Storage
-       * +usage=Enable blob storage feature in the platform
-       */
-      enable_blob_storage: boolean;
-      /**
-       * +label=Enable TrueFoundry Registry
-       * +usage=Enable docker registry feature in the platform
-       */
-      enable_container_registry: boolean;
-      /**
-       * +label=Enable Cluster Integration
-       * +usage=Enable cluster integration through terraform which requires Azure AD developer access (Entra ID). Disable this to create app registration manually. Follow here for [Manual Setup](https://docs.truefoundry.com/docs/integration-provider-azure#azure-aks-integration)
-       */
-      enable_cluster_integration: boolean;
-    };
+    platform_features: AzureNewPlatform | AzureExistingPlatform;
   };
-  /**
-   * +label=Resource Tags
-   * +usage=Key-value pairs to tag Azure resources
-   * +sort=7
-   */
-  tags?: {
-    [k: string]: string | {};
-  };
+  backend: AzureBackendConfig;
 }
 /**
  * +label=OAuth2 Client Configuration
@@ -5256,7 +5416,7 @@ export interface BaseOAuth2Login {
    * +usage=Client secret or the TrueFoundry secret containing the client secret for OAuth2.
    * +sort=300
    */
-  client_secret: string;
+  client_secret?: string;
   /**
    * +label=Authorization URL
    * +usage=URL for the authorization request
@@ -5387,6 +5547,206 @@ export interface BudgetWhen {
     [k: string]: string;
   };
 }
+/**
+ * +label=System Message
+ * +usage=System message for the chat
+ */
+export interface SystemMessage {
+  /**
+   * +value=system
+   * +label=Role
+   * +usage=Role of the message
+   * +uiType=Ignore
+   */
+  role: "system";
+  /**
+   * +label=Content
+   * +usage=Text content for the system message
+   * +uiType=CodeEditor
+   * +uiProps={"language": "text"}
+   */
+  content: string | BlobStorageReference;
+  /**
+   * +label=Name
+   * +usage=Name of the system
+   */
+  name?: string;
+}
+/**
+ * +label=User Message
+ * +usage=User message turn
+ */
+export interface UserMessage {
+  /**
+   * +value=user
+   * +usage=Role of the message
+   * +uiType=Ignore
+   */
+  role: "user";
+  /**
+   * +label=Content
+   * +usage=Content of the user message. can be a mix of text and images
+   * +uiType=CodeEditor
+   * +uiProps={"language": "text"}
+   */
+  content:
+    | string
+    | (TextContentPart | ImageContentPart)[]
+    | BlobStorageReference;
+  /**
+   * +label=Name
+   * +usage=Name of the user this message is from
+   */
+  name?: string;
+}
+/**
+ * +label=Image Content
+ * +usage=Image content for the message
+ */
+export interface ImageContentPart {
+  /**
+   * +value=image_url
+   * +usage=Type of the content part
+   */
+  type: "image_url";
+  /**
+   * +label=Image URL
+   * +usage=Image URL linking to the image
+   */
+  image_url: {
+    /**
+     * +label=URL
+     * +usage=Image URL linking to the image
+     */
+    url: string | BlobStorageReference;
+    /**
+     * +label=Details
+     */
+    detail?: string;
+  };
+}
+/**
+ * +label=Tool Message
+ * +usage=Tool message for the chat
+ */
+export interface ToolMessage {
+  /**
+   * +label=Role
+   * +usage=Role of the message
+   */
+  role: "tool";
+  /**
+   * +label=Content
+   * +usage=Content of the tool call result
+   */
+  content: string | BlobStorageReference;
+  /**
+   * +label=Tool Call ID
+   * +usage=Unique identifier for the tool call
+   */
+  tool_call_id: string;
+}
+/**
+ * +label=Developer Message
+ * +usage=Developer message for the chat
+ */
+export interface DeveloperMessage {
+  /**
+   * +value=Developer
+   * +label=Role
+   * +usage=The role of the messages author, in this case developer.
+   */
+  role: "developer";
+  /**
+   * +label=Content
+   * +usage=The contents of the developer message.
+   */
+  content: string | BlobStorageReference;
+  /**
+   * +label=Name
+   * +usage=An optional name for the participant.
+   */
+  name?: string;
+}
+/**
+ * +label=Model Configuration
+ * +icon=fa-cogs:#326ce5
+ * +usage=Add a model from Gateway along with parameters to be used for chat completion
+ */
+export interface ModelConfiguration {
+  /**
+   * +sort=1000
+   * +uiType=SelectModelAndProvider
+   * +uiProps={"isModel": false,"providerJsonKey": "model_configuration.provider","searchable": true}
+   * +label=Provider Name
+   * +usage=Name of the provider, must be one of the integration providers configured for the Gateway
+   */
+  provider: string;
+  /**
+   * +sort=1001
+   * +uiType=SelectModelAndProvider
+   * +uiProps={"isModel": true,"providerJsonKey": "model_configuration.provider","searchable": true}
+   * +label=Model Name
+   * +usage=Name of the model to be used for generations. This model should be available in the provider
+   */
+  model: string;
+  /**
+   * +label=Parameters
+   * +usage=Parameters to pass to the model when generating
+   */
+  parameters?: {
+    max_tokens?: number;
+    temperature?: number;
+    top_k?: number;
+    top_p?: number;
+    stop?: string[] | string;
+  };
+  /**
+   * +label=Extra Parameters
+   * +usage=Arbitrary extra parameters to pass to the model when generating
+   */
+  extra_parameters?: {};
+}
+/**
+ * +label=Tool Schema
+ * +usage=Schema defining a tool for the chat prompt
+ */
+export interface ToolSchema {
+  /**
+   * +label=Type
+   * +usage=Type of the tool
+   */
+  type: "function";
+  function: FunctionSchema;
+}
+/**
+ * +label=Function Schema
+ * +usage=Schema defining a function for tool calls
+ */
+export interface FunctionSchema {
+  /**
+   * +label=Function Name
+   * +usage=Name of the function
+   */
+  name: string;
+  /**
+   * +label=Description
+   * +usage=Description of the function
+   */
+  description: string;
+  /**
+   * +label=Parameters
+   * +usage=Parameters schema for the function
+   * +uiType=JsonInput
+   * +uiProps={"descriptionInline":true}
+   */
+  parameters?: {};
+  /**
+   * +label=Strict
+   * +usage=Indicates if the function should be called strictly
+   */
+  strict: boolean;
+}
 export interface ClusterManifest {
   /**
    * +value=cluster
@@ -5438,6 +5798,10 @@ export interface ClusterManifest {
      * +label=Cluster Loki URL
      */
     loki_url?: string;
+    /**
+     * +label=Cluster VictoriaLogs URL
+     */
+    victoria_logs_url?: string;
     /**
      * +label=Cluster Prometheus URL
      */
@@ -6084,47 +6448,6 @@ export interface MCPServerHeaderAuth {
   };
 }
 /**
- * +label=Slack OAuth2
- */
-export interface MCPServerSlackOAuth2 {
-  /**
-   * +value=slack-oauth2
-   */
-  type: "slack-oauth2";
-  /**
-   * +label=Client ID
-   * +usage=client ID for OAuth2.
-   * +sort=200
-   */
-  client_id: string;
-  /**
-   * +label=Client Secret
-   * +usage=Client secret or the TrueFoundry secret containing the client secret for OAuth2.
-   * +sort=300
-   */
-  client_secret: string;
-  /**
-   * Override the default authorization_url
-   * +label=Slack Authorization URL
-   * +usage=URL for the authorization request
-   * +sort=400
-   */
-  authorization_url: string;
-  /**
-   * Override the default token_url
-   * +label=Slack Token URL
-   * +usage=The endpoint to exchange auth code for tokens.
-   * +sort=500
-   */
-  token_url: string;
-  /**
-   * +label=Scopes
-   * +usage=List of scopes to request from the OAuth2 provider.
-   * +sort=600
-   */
-  scopes: string[];
-}
-/**
  * +label=Custom
  * +icon=puzzle-piece
  */
@@ -6191,8 +6514,7 @@ export interface DataDirectory {
   source: TrueFoundryManagedSource | ExternalBlobStorageSource;
 }
 /**
- * +label=Databricks API Key Auth
- * +icon=databricks
+ * +label=Databricks API Key Based Auth
  */
 export interface DatabricksApiKeyAuth {
   /**
@@ -6201,9 +6523,8 @@ export interface DatabricksApiKeyAuth {
   type: "api-key";
   /**
    * +label=API Key
+   * +usage=API key for Databricks authentication.
    * +sort=100
-   * +usage=The API key for Databricks authentication
-   * +message=API key must not be empty
    * +uiType=Password
    */
   api_key: string;
@@ -6303,7 +6624,12 @@ export interface DatabricksProviderAccount {
    * +uiProps={"disableEdit":true}
    */
   name: string;
-  auth_data: DatabricksApiKeyAuth;
+  /**
+   * +label=Auth Data
+   * +sort=300
+   * +usage=Databricks authentication credentials
+   */
+  auth_data: DatabricksServicePrincipalAuth | DatabricksApiKeyAuth;
   /**
    * +label=Base URL
    * +sort=400
@@ -6325,6 +6651,30 @@ export interface DatabricksProviderAccount {
    * +uiType=Collaborators
    */
   collaborators?: Collaborator[];
+}
+/**
+ * +label=Databricks Service Principal Auth
+ * +usage=You can authenticate using Databricks service principal. To generate OAuth secret and Client ID, go to Databricks workspace -> Workspace Settings -> Identity and Access -> Service Principals -> Secrets.
+ */
+export interface DatabricksServicePrincipalAuth {
+  /**
+   * +value=service-principal
+   */
+  type: "service-principal";
+  /**
+   * +label=OAuth Secret
+   * +usage=OAuth secret of the Databricks service principal.
+   * +sort=200
+   * +uiType=Password
+   */
+  oauth_secret: string;
+  /**
+   * +label=Client ID
+   * +usage=Client ID or Application ID of the Databricks service principal.
+   * +sort=100
+   * +uiType=Password
+   */
+  client_id: string;
 }
 /**
  * +label=DeepInfra Model
@@ -6571,7 +6921,7 @@ export interface DynamicVolumeConfig {
    */
   storage_class: string;
   /**
-   * +label=Size
+   * +label=Size(Gi)
    * +unit=Gi
    * +usage=Size of volume in Gi
    */
@@ -9972,7 +10322,7 @@ export interface TeamManifest {
    */
   members: string[];
 }
-export interface Policy {
+export interface PolicyManifest {
   /**
    * +value=policy
    */
@@ -10083,7 +10433,7 @@ export interface PolicyFilters {
    */
   env_names?: string[];
 }
-export interface TracingProject {
+export interface TracingProjectManifest {
   /**
    * +value=tracing-project
    */
@@ -10486,7 +10836,7 @@ export interface SelfHostedModelProviderAccount {
   integrations: SelfHostedModelIntegrations[];
   /**
    * +label=Collaborators
-   * +sort=500
+   * +sort=200
    * +uiType=Collaborators
    */
   collaborators?: Collaborator[];
@@ -10555,7 +10905,7 @@ export interface SelfHostedModelIntegrations {
   authorized_subjects?: string[];
 }
 /**
- * +label=MCPServer Provider Account
+ * +label=MCP Server Group
  * +icon=puzzle-piece
  */
 export interface MCPServerProviderAccount {
@@ -10566,28 +10916,28 @@ export interface MCPServerProviderAccount {
   /**
    * +label=Name
    * +sort=100
-   * +usage=The name of the MCPServer provider account
+   * +usage=The name of the MCP Server Group.
    * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    * +uiProps={"disableEdit":true}
    */
   name: string;
   /**
-   * +label=Integrations
-   * +usage=List of integrations that are associated with the provider account.
+   * +label=Access Control
+   * +sort=200
+   * +usage=List of users who have access to this MCP Server Group.
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+  /**
+   * +label=MCP Servers
+   * +usage=List of MCP Servers, which are part of this MCP Server Group.
    * +sort=400
    * +uiType=IntegrationsGroup
    */
   integrations: MCPServerIntegrations[];
-  /**
-   * +label=Collaborators
-   * +sort=500
-   * +usage=List of users who have access to this provider account
-   * +uiType=Collaborators
-   */
-  collaborators?: Collaborator[];
 }
 /**
- * +label=MCPServer Integration
+ * +label=MCP Server
  * +icon=puzzle-piece
  */
 export interface MCPServerIntegrations {
@@ -10597,32 +10947,26 @@ export interface MCPServerIntegrations {
   type: "integration/mcp-server/hosted-mcp-server";
   /**
    * +label=Name
-   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +usage=The name of the MCP Server.
    * +sort=100
    */
   name: string;
   /**
    * +label=Description
+   * +usage=Provide a brief description of the purpose of this MCP Server.
    * +uiType=TextArea
-   * +usage=The Description of the integration that will be displayed in the TrueFoundry UI.
+   * +message=1 to 1000 characters long, may contain any character except newlines
    * +sort=200
    * +uiProps={"descriptionInline":true}
    */
   description: string;
   /**
    * +label=URL
-   * +usage=The endpoint URL for the MCP server.
+   * +usage=The endpoint URL for the MCP Server. The system will first try a connection using streamable-http transport on this URL. If that fails, it will attempt a connection using SSE transport on <url>/sse.
    * +sort=300
    */
   url: string;
   auth_data?: MCPServerAuth;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=500
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
 }
 /**
  * +label=Jfrog Artifacts Registry
@@ -10656,7 +11000,7 @@ export interface JfrogArtifactsRegistry {
   authorized_subjects?: string[];
 }
 /**
- * +label=MCPServer Integration
+ * +label=MCP Server
  * +icon=puzzle-piece
  */
 export interface MCPServerIntegration {
@@ -10666,32 +11010,26 @@ export interface MCPServerIntegration {
   type: "integration/mcp-server/hosted-mcp-server";
   /**
    * +label=Name
-   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +usage=The name of the MCP Server.
    * +sort=100
    */
   name: string;
   /**
    * +label=Description
+   * +usage=Provide a brief description of the purpose of this MCP Server.
    * +uiType=TextArea
-   * +usage=The Description of the integration that will be displayed in the TrueFoundry UI.
+   * +message=1 to 1000 characters long, may contain any character except newlines
    * +sort=200
    * +uiProps={"descriptionInline":true}
    */
   description: string;
   /**
    * +label=URL
-   * +usage=The endpoint URL for the MCP server.
+   * +usage=The endpoint URL for the MCP Server. The system will first try a connection using streamable-http transport on this URL. If that fails, it will attempt a connection using SSE transport on <url>/sse.
    * +sort=300
    */
   url: string;
   auth_data?: MCPServerAuth;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=500
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
 }
 /**
  * +label=Mistral AI Model
