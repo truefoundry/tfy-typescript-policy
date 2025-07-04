@@ -104,6 +104,7 @@ export enum ControllerNameForSystemUser {
   TFY_AUTOUPGRADE = 'tfy-autoupgrade',
   TFY_SYSTEM = 'tfy-system',
   TFY_CULLING_CONTROLLER = 'tfy-culling-controller',
+  TFY_TRACE_INGESTOR = 'tfy-trace-ingestor',
 }
 
 export interface Subject {
