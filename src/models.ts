@@ -17,7 +17,8 @@ export type ModelType =
   | "realtime"
   | "rerank"
   | "audio"
-  | "moderation";
+  | "moderation"
+  | "image";
 export type ModelCostMetric =
   | PerThousandTokensCostMetric
   | PerThousandEmbeddingTokensCostMetric
@@ -85,48 +86,7 @@ export type AwsEksRegions =
   | "sa-east-1"
   | "us-gov-east-1"
   | "us-gov-west-1";
-export type Agent = BaseArtifactVersion & {} & {
-  /**
-   * +value=agent
-   * +usage=Type of the entity
-   */
-  type?: "agent";
-  /**
-   * +sort=100
-   * +uiType=TextArea
-   * +label=Goal
-   * +usage=Short form description. Will be used as `description` when this agent is used as a tool.
-   * +uiProps={"descriptionInline":true}
-   */
-  goal?: string;
-  /**
-   * `instruction` is the system prompt for now. (2.5 * 1024)
-   * +sort=150
-   * +uiType=AgentInstructions
-   * +uiProps={"helpText":"Use the syntax ${Tool FQN} to reference a tool, and ${AGENT FQN} to reference another agent"}
-   * +label=Instructions
-   * +usage=Instructions for the agent to follow to achieve the goal
-   * +uiProps={"descriptionInline":true}
-   */
-  instruction?: string;
-  /**
-   * +sort=200
-   * +uiType=Hidden
-   * +label=Tools
-   * +usage=Tools available to the agent
-   * +uiProps={"descriptionInline":true}
-   */
-  available_tools?: string[];
-  /**
-   * +sort=300
-   * +uiType=EnabledModelSelector
-   * +uiProps={"searchable":true,"modelType":"chat","providerType":"openai"}
-   * +label=Model
-   * +usage=Model to use when running the agent
-   */
-  model_id?: string;
-};
-export type AgentOpenAPIToolWithFQN = AgentOpenAPITool & {} & {
+export type AgentOpenAPIToolManifestWithFQN = AgentOpenAPIToolManifest & {} & {
   /**
    * +usage=ID of the agent tool
    */
@@ -136,7 +96,7 @@ export type AgentOpenAPIToolWithFQN = AgentOpenAPITool & {} & {
    */
   fqn?: string;
 };
-export type AgentOpenAPITool = BaseArtifactVersion & {} & {
+export type AgentOpenAPIToolManifest = BaseArtifactVersion & {} & {
   /**
    * +value=openapi-tool
    * +usage=Type of the agent
@@ -186,7 +146,7 @@ export type AgentOpenAPITool = BaseArtifactVersion & {} & {
     [k: string]: string;
   };
 };
-export type AgentWithFQN = Agent & {} & {
+export type AgentManifestWithFQN = AgentManifest & {} & {
   /**
    * +usage=ID of the agent
    */
@@ -195,6 +155,47 @@ export type AgentWithFQN = Agent & {} & {
    * +usage=FQN of the agent
    */
   fqn?: string;
+};
+export type AgentManifest = BaseArtifactVersion & {} & {
+  /**
+   * +value=agent
+   * +usage=Type of the entity
+   */
+  type?: "agent";
+  /**
+   * +sort=100
+   * +uiType=TextArea
+   * +label=Goal
+   * +usage=Short form description. Will be used as `description` when this agent is used as a tool.
+   * +uiProps={"descriptionInline":true}
+   */
+  goal?: string;
+  /**
+   * `instruction` is the system prompt for now. (2.5 * 1024)
+   * +sort=150
+   * +uiType=AgentInstructions
+   * +uiProps={"helpText":"Use the syntax ${Tool FQN} to reference a tool, and ${AGENT FQN} to reference another agent"}
+   * +label=Instructions
+   * +usage=Instructions for the agent to follow to achieve the goal
+   * +uiProps={"descriptionInline":true}
+   */
+  instruction?: string;
+  /**
+   * +sort=200
+   * +uiType=Hidden
+   * +label=Tools
+   * +usage=Tools available to the agent
+   * +uiProps={"descriptionInline":true}
+   */
+  available_tools?: string[];
+  /**
+   * +sort=300
+   * +uiType=EnabledModelSelector
+   * +uiProps={"searchable":true,"modelType":"chat","providerType":"openai"}
+   * +label=Model
+   * +usage=Model to use when running the agent
+   */
+  model_id?: string;
 };
 export type NotificationTargetForAlertRule = Email | SlackBot | PagerDuty;
 export type AlertSeverity = "warning" | "critical";
@@ -270,7 +271,7 @@ export type NotificationTarget = Email | SlackWebhook | SlackBot;
  * +label=Artifact Version
  * +usage=Log a new Artifact Version containing files and folders with metadata
  */
-export type ArtifactVersion = BaseArtifactVersion & {} & {
+export type ArtifactManifest = BaseArtifactVersion & {} & {
   /**
    * +label=Type
    * +usage=Artifact Version
@@ -305,6 +306,11 @@ export type AwsIntegrations =
   | AwsSecretsManager
   | AwsEksIntegration
   | BedrockModel;
+export type AzureContentSafetyCategory =
+  | "Hate"
+  | "SelfHarm"
+  | "Sexual"
+  | "Violence";
 export type AzureIntegrations =
   | AzureAksIntegration
   | AzureContainerRegistry
@@ -314,11 +320,76 @@ export type AzureIntegrations =
   | AzureReposIntegration
   | AzureAIInferenceModel
   | AzureFoundryModel;
+export type AzurePIICategory =
+  | "all"
+  | "Person"
+  | "PersonType"
+  | "PhoneNumber"
+  | "Organization"
+  | "Address"
+  | "Email"
+  | "URL"
+  | "IP Address"
+  | "DateTime"
+  | "BankAccountNumber"
+  | "DriversLicenseNumber"
+  | "PassportNumber";
 export type BudgetLimitUnit =
   | "cost_per_day"
   | "cost_per_month"
   | "tokens_per_day"
   | "tokens_per_month";
+/**
+ * +discriminator=role
+ * +usage=A single chat message turn
+ */
+export type ChatMessageTurn =
+  | SystemMessage
+  | AssistantMessage
+  | UserMessage
+  | ToolMessage
+  | DeveloperMessage;
+/**
+ * +label=Chat Prompt
+ * +usage=Fill in the information for opening a new chat prompt
+ */
+export type ChatPromptManifest = BaseArtifactVersion & {} & {
+  /**
+   * +label=Type
+   * +icon=fa-desktop:#326ce5
+   * +sort=3000
+   * +usage=Type of the prompt
+   * +value=chat_prompt
+   */
+  type?: "chat_prompt";
+  /**
+   * +sort=4000
+   * +label=Messages in the chat conversation
+   * +usage=List of messages in the chat conversation, must be non-empty
+   */
+  messages?: ChatMessageTurn[];
+  /**
+   * +label=Variables
+   * +usage=Variables referenced in messages and that can be replaced when running generation
+   * +sort=5000
+   */
+  variables?: {
+    [k: string]: string | null;
+  };
+  model_configuration?: ModelConfiguration;
+  /**
+   * +label=Tools
+   * +usage=List of tools to be used in the chat prompt
+   * +sort=7000
+   */
+  tools?: ToolSchema[];
+  /**
+   * +label=MCP Servers
+   * +usage=A list of MCP servers FQNs or URLs and their tools
+   * +sort=7500
+   */
+  mcp_servers?: (MCPServerWithFQN | MCPServerWithURL)[];
+};
 /**
  * +docs=Describes the configuration for the code server
  */
@@ -346,7 +417,7 @@ export type OAuth2LoginProvider = BaseOAuth2Login & {} & {
 export type MCPServerAuth =
   | MCPServerHeaderAuth
   | MCPServerOAuth2
-  | MCPServerSlackOAuth2;
+  | MCPServerPassthrough;
 /**
  * +label=OAuth2
  */
@@ -393,7 +464,8 @@ export type GCPRegion =
   | "europe-west9"
   | "me-central1"
   | "me-central2"
-  | "me-west1";
+  | "me-west1"
+  | "global";
 export type GatewayConfig =
   | RateLimitConfig
   | FallbackConfig
@@ -417,6 +489,12 @@ export type GcpIntegrations =
   | GcpGkeIntegration
   | VertexModel
   | GoogleModel;
+export type GuardrailConfigIntegrations =
+  | OpenAIModerationsGuardrailConfig
+  | AWSBedrockGuardrailConfig
+  | CustomGuardrailConfig
+  | AzurePIIGuardrailConfig
+  | AzureContentSafetyGuardrailConfig;
 export type InfraProviderAccount =
   | AwsProviderAccount
   | AzureProviderAccount
@@ -454,20 +532,28 @@ export type Input =
   | ApplicationSet
   | Intercept
   | MLRepoManifest
-  | ModelVersion
-  | ArtifactVersion
+  | ModelManifest
+  | ArtifactManifest
   | DataDirectory
   | GatewayConfig
   | TeamManifest
   | EnvironmentManifest
-  | Policy
+  | PolicyManifest
   | AlertConfig
-  | TracingProject
+  | TracingProjectManifest
+  | DeprecatedTracingProjectManifest
+  | TracingApplicationManifest
   | ProviderAccounts
+  | ChatPromptManifest
+  | AgentOpenAPIToolManifest
+  | AgentManifest
   | AWSTerraformConfig
   | GCPTerraformConfig
   | AzureTerraformConfig
-  | GenericTerraformConfig;
+  | GenericTerraformConfig
+  | CommonToolsSettings
+  | AIFeaturesSettings
+  | SSOSettings;
 export type ProviderIntegrations =
   | AwsIntegrations
   | GcpIntegrations
@@ -559,7 +645,7 @@ export type RStudio = BaseWorkbenchInput & {} & {
  * +label=Artifact Version
  * +usage=Log a new Model Version containing model files and folders with metadata
  */
-export type ModelVersion = BaseArtifactVersion & {} & {
+export type ModelManifest = BaseArtifactVersion & {} & {
   /**
    * +label=Type
    * +usage=Model Version
@@ -628,12 +714,14 @@ export type PolicyEntityTypes =
   | "job"
   | "notebook"
   | "ssh-server"
-  | "workflow";
+  | "workflow"
+  | "helm";
 export type PolicyActions = "apply";
 export type ProviderAccounts =
   | InfraProviderAccount
   | ModelProviderAccount
-  | MCPServerProviderAccount;
+  | MCPServerProviderAccount
+  | GuardrailConfigGroup;
 export type ModelProviderAccount =
   | AwsBedrockProviderAccount
   | GoogleVertexProviderAccount
@@ -816,6 +904,30 @@ export interface Collaborator {
    * +usage=Role ID for the resource
    */
   role_id: string;
+}
+/**
+ * +docs=Describes the configuration for TrueFoundry AI features
+ * +label=AI Features Settings
+ */
+export interface AIFeaturesSettings {
+  /**
+   * +value=settings/ai-features
+   */
+  type: "settings/ai-features";
+  /**
+   * +label=Enabled
+   * +usage=Enable/Disable AI features.
+   * Other fields only apply when this is true
+   * +sort=1
+   */
+  enabled: boolean;
+  /**
+   * +label=AI Provider
+   * +usage=AI provider to use for AI features
+   * When TrueFoundry is selected, TrueFoundry will manage and provide the AI models for the features.
+   * +uiProps={"disableEdit":true}
+   */
+  ai_provider: "truefoundry";
 }
 /**
  * +docs=Describes the configuration for the input AMQP worker
@@ -1023,9 +1135,9 @@ export interface AWSAddons {
    * +uiProps={"forwardJsonKey":true}
    * +sort=11
    */
-  loki: {
+  tfy_logs: {
     /**
-     * +label=Install Loki for logging
+     * +label=Install VictoriaLogs for logging
      */
     enabled: boolean;
   };
@@ -1087,6 +1199,87 @@ export interface AWSBackendConfig {
   dynamodb_table?: string;
 }
 /**
+ * +label=AWS Bedrock
+ * +icon=aws-bedrock
+ */
+export interface AWSBedrockGuardrailConfig {
+  /**
+   * +label=Name
+   * +sort=50
+   * +usage=The name of the Guardrail Config.
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +uiType=Hidden
+   * +value=integration/guardrail-config/aws-bedrock
+   */
+  type: "integration/guardrail-config/aws-bedrock";
+  /**
+   * +label=Operation
+   * +usage=The operation type to use for the Guardrail. Validate guardrails are used to validate requests and mutate can validate as well as mutate requests.
+   * Validate guardrails are run in parallel while mutate guardrails are run sequentially.
+   * +uiType=Select
+   * +sort=50
+   */
+  operation: "validate" | "mutate";
+  /**
+   * +label=AWS Account Auth Data
+   * +usage=Authentication data for the AWS account
+   */
+  auth_data?: AwsAccessKeyBasedAuth | AwsAssumedRoleBasedAuth;
+  /**
+   * +label=Guardrail ID
+   * +usage=The ID of the Guardrail to use.
+   */
+  guardrail_id: string;
+  /**
+   * +label=Guardrail Version
+   * +usage=The version of the Guardrail to use.
+   */
+  guardrail_version: string;
+  region: AWSRegion;
+}
+/**
+ * +label=AWS Access Key Based Auth
+ */
+export interface AwsAccessKeyBasedAuth {
+  /**
+   * +value=access-key-based
+   */
+  type: "access-key-based";
+  /**
+   * +label=AWS access key ID
+   * +usage=AWS access key ID that you want to use for authentication.
+   * +sort=100
+   * +uiType=Password
+   */
+  access_key_id: string;
+  /**
+   * +label=AWS access key secret
+   * +usage=AWS access key secret that you want to use for authentication.
+   * +sort=200
+   * +uiType=Password
+   */
+  secret_access_key: string;
+}
+/**
+ * +label=AWS Assumed Role Based Auth
+ */
+export interface AwsAssumedRoleBasedAuth {
+  /**
+   * +value=assumed-role-based
+   */
+  type: "assumed-role-based";
+  /**
+   * +label=AWS Assumed Role ARN
+   * +usage=ARN of the role you want to assume.
+   * +sort=100
+   */
+  assumed_role_arn: string;
+}
+/**
  * +label=PostgreSQL on Kubernetes
  * +usage=Installs PostgreSQL as container in the cluster. Not recommended for production use.
  */
@@ -1105,6 +1298,7 @@ export interface AWSExistingCluster {
    * +label=Existing cluster name
    * +icon=fa-cube:#black
    * +sort=201
+   * +message=Cluster name must be between 3 to 35 lower case characters long alphanumeric word, may contain - in between, cannot start with a number, and cannot end with a hyphen.
    */
   name: string;
   /**
@@ -1147,6 +1341,7 @@ export interface AWSExistingDatabaseConfig {
   username: string;
   /**
    * +label=Database Password
+   * +uiType=Password
    */
   password: string;
 }
@@ -1167,7 +1362,7 @@ export interface AWSExistingNetwork {
   vpc_id: string;
   /**
    * +label=Private Subnet IDs
-   * +usage=List of existing private subnet IDs
+   * +usage=List of existing private subnet IDs. ⚠️ Important: Number of private subnets should be equal to or more than number of availability zones, and at least one subnet should be present in each AZ
    * +sort=32
    */
   private_subnets_ids: string[];
@@ -1268,6 +1463,7 @@ export interface AWSTerraformConfig {
   /**
    * +label=Availability Zones in the region
    * +sort=3
+   * +usage=⚠️ Warning: Once availability zones are set and infrastructure is created, they cannot be changed later without recreating resources
    * +uiProps={"enableSetDefaultValue":true}
    */
   availability_zones: string[];
@@ -1336,7 +1532,7 @@ export interface AWSTerraformConfig {
      * +usage=List of roles that can assume your platform role. Change this if you are using your own control plane.
      * +uiType=Hidden
      */
-    control_plane_roles: string[];
+    control_plane_roles?: string[];
     loadbalancer?: ComputePlaneLoadBalancer;
     /**
      * +label=Platform Features
@@ -1472,12 +1668,36 @@ export interface AuthTypeAccessKey {
   type: "access_key";
   /**
    * +label=AWS Access Key for authentication
+   * +uiType=Password
    */
   access_key: string;
   /**
    * +label=AWS Secret Key for authentication
+   * +uiType=Password
    */
   secret_key: string;
+}
+export interface AgentApp {
+  /**
+   * +value=agent-app
+   * +usage=Type of the app
+   */
+  type: "agent-app";
+  /**
+   * +label=Tools
+   * +usage=Tools available to the Agent app
+   */
+  tools: AgentOpenAPIToolManifestWithFQN[];
+  /**
+   * +label=Agents
+   * +usage=Agents available to the Agent app
+   */
+  agents: AgentManifestWithFQN[];
+  /**
+   * +label=Root Agent
+   * +usage=Root Agent for the app. This will be the first agent invoked
+   */
+  root_agent: string;
 }
 export interface BaseArtifactVersion {
   /**
@@ -1522,28 +1742,6 @@ export interface BaseArtifactVersion {
    */
   version?: number;
 }
-export interface AgentApp {
-  /**
-   * +value=agent-app
-   * +usage=Type of the app
-   */
-  type: "agent-app";
-  /**
-   * +label=Tools
-   * +usage=Tools available to the Agent app
-   */
-  tools: AgentOpenAPIToolWithFQN[];
-  /**
-   * +label=Agents
-   * +usage=Agents available to the Agent app
-   */
-  agents: AgentWithFQN[];
-  /**
-   * +label=Root Agent
-   * +usage=Root Agent for the app. This will be the first agent invoked
-   */
-  root_agent: string;
-}
 /**
  * +label=Blob Storage Reference
  * +usage=A reference to content offloaded to blob storage
@@ -1583,11 +1781,7 @@ export interface AlertConfig {
    * +uiType=Hidden
    */
   name: string;
-  /**
-   * +label=Application FQN
-   * +uiType=Hidden
-   */
-  application_fqn: string;
+  resource: AlertConfigResource;
   /**
    * +label=Notification Targets
    * +usage=Configure one or more notification targets where alerts will be sent. Each target specifies a notification channel (email or slack).
@@ -1602,6 +1796,20 @@ export interface AlertConfig {
    * +uiType=Structs
    */
   rules: PrometheusAlertRule[];
+}
+export interface AlertConfigResource {
+  /**
+   * +label=Resource Type
+   * +usage=The type of resource this alert config belongs to. Can be either an application or a cluster.
+   * +uiType=Hidden
+   */
+  type: "application" | "cluster";
+  /**
+   * +label=Resource FQN
+   * +usage=FQN of the resource this alert config belongs to.
+   * +uiType=Hidden
+   */
+  fqn: string;
 }
 /**
  * +label=Email
@@ -1669,6 +1877,7 @@ export interface PrometheusAlertRule {
   /**
    * +label=Type
    * +value=prometheus-alert-rule
+   * +uiType=Hidden
    */
   type: "prometheus-alert-rule";
   /**
@@ -1834,7 +2043,7 @@ export interface AnthropicProviderAccount {
    * +label=Collaborators
    * +sort=400
    * +usage=List of users who have access to this provider account
-   * +uiType=Hidden
+   * +uiType=Collaborators
    */
   collaborators?: Collaborator[];
 }
@@ -3364,6 +3573,7 @@ export interface Job {
   trigger_on_deploy?: boolean;
   /**
    * +label=Params for input
+   * +uiType=StructsTable
    * +usage=Configure params and pass it to create different job runs
    * +sort=400
    */
@@ -3683,18 +3893,6 @@ export interface GitHelmRepo {
    */
   value_files?: string[];
 }
-export interface ArtifactPath {
-  /**
-   * +label=Source path
-   * +usage=Local file or folder path
-   */
-  src: string;
-  /**
-   * +label=Destination path
-   * +usage=Relative path where the file or folder will be uploaded to in the artifact
-   */
-  dest?: string;
-}
 /**
  * +label=TrueFoundry Managed Source
  */
@@ -3741,43 +3939,103 @@ export interface LocalArtifactSource {
    */
   paths: ArtifactPath[];
 }
-/**
- * +label=AWS Access Key Based Auth
- */
-export interface AwsAccessKeyBasedAuth {
+export interface ArtifactPath {
   /**
-   * +value=access-key-based
+   * +label=Source path
+   * +usage=Local file or folder path
    */
-  type: "access-key-based";
+  src: string;
   /**
-   * +label=AWS access key ID
-   * +usage=AWS access key ID that you want to use for authentication.
-   * +sort=100
-   * +uiType=Password
+   * +label=Destination path
+   * +usage=Relative path where the file or folder will be uploaded to in the artifact
    */
-  access_key_id: string;
-  /**
-   * +label=AWS access key secret
-   * +usage=AWS access key secret that you want to use for authentication.
-   * +sort=200
-   * +uiType=Password
-   */
-  secret_access_key: string;
+  dest?: string;
 }
 /**
- * +label=AWS Assumed Role Based Auth
+ * +label=Assistant Message
+ * +usage=Assistant message turn
  */
-export interface AwsAssumedRoleBasedAuth {
+export interface AssistantMessage {
   /**
-   * +value=assumed-role-based
+   * +value=assistant
+   * +label=Role
+   * +usage=Role of the message
+   * +uiType=Ignore
    */
-  type: "assumed-role-based";
+  role: "assistant";
   /**
-   * +label=AWS Assumed Role ARN
-   * +usage=ARN of the role you want to assume.
-   * +sort=100
+   * +label=Content
+   * +usage=Text content for the assistant message
+   * +uiType=CodeEditor
+   * +uiProps={"language": "text"}
    */
-  assumed_role_arn: string;
+  content?:
+    | string
+    | (TextContentPart | RefusalContentPart)[]
+    | BlobStorageReference;
+  /**
+   * +label=Tool Calls
+   * +usage=List of tool calls made by the assistant
+   */
+  tool_calls?: ToolCall[];
+  /**
+   * +label=Name
+   * +usage=Name of the assistant this message is from
+   */
+  name?: string;
+}
+/**
+ * +label=Text Content
+ * +usage=Text content for the message
+ */
+export interface TextContentPart {
+  /**
+   * +value=text
+   * +usage=Type of the content part
+   */
+  type: "text";
+  /**
+   * +label=Text
+   * +usage=Text content for the message
+   */
+  text: string | BlobStorageReference;
+}
+export interface RefusalContentPart {
+  /**
+   * +value=refusal
+   * +usage=Type of the content part
+   */
+  type: string;
+  /**
+   * +label=Refusal
+   * +usage=Reason
+   */
+  refusal: string;
+}
+export interface ToolCall {
+  /**
+   * +label=Type
+   * +usage=Type of the tool call
+   */
+  type: "function";
+  /**
+   * +label=ID
+   * +usage=Unique identifier for the tool call
+   */
+  id: string;
+  function: Function;
+}
+export interface Function {
+  /**
+   * +label=Name
+   * +usage=Name of the tool/function being called
+   */
+  name: string;
+  /**
+   * +label=Arguments
+   * +usage=Arguments passed to the tool/function
+   */
+  arguments: string;
 }
 /**
  * +label=AWS Bedrock
@@ -4280,17 +4538,6 @@ export interface AzureAddons {
   /**
    * +uiType=Ignore
    * +uiProps={"forwardJsonKey":true}
-   * +sort=6
-   */
-  metrics_server: {
-    /**
-     * +label=Install Metrics Server for metrics collection
-     */
-    enabled: boolean;
-  };
-  /**
-   * +uiType=Ignore
-   * +uiProps={"forwardJsonKey":true}
    * +sort=7
    */
   prometheus: {
@@ -4304,9 +4551,9 @@ export interface AzureAddons {
    * +uiProps={"forwardJsonKey":true}
    * +sort=8
    */
-  loki: {
+  tfy_logs: {
     /**
-     * +label=Install Loki for logging
+     * +label=Install VictoriaLogs for logging
      */
     enabled: boolean;
   };
@@ -4421,7 +4668,7 @@ export interface AzureOAuth {
 export interface AzureBackendConfig {
   /**
    * +label=Resource Group Name
-   * +usage=The name of the resource group containing the storage account
+   * +usage=The name of the resource group containing the storage account. It's recommended to use a separate resource group from your cluster deployment for better organization and security isolation
    * +message=Resource group names can only include alphanumerics, underscores, parentheses, hyphens, periods and can have max length of 90
    */
   resource_group_name: string;
@@ -4544,6 +4791,64 @@ export interface AzureContainerRegistry {
   authorized_subjects?: string[];
 }
 /**
+ * +label=Azure Content Safety
+ * +icon=azure
+ */
+export interface AzureContentSafetyGuardrailConfig {
+  /**
+   * +label=Name
+   * +sort=50
+   * +usage=The name of the Guardrail Config.
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +uiType=Hidden
+   * +value=integration/guardrail-config/azure-content-safety
+   */
+  type: "integration/guardrail-config/azure-content-safety";
+  /**
+   * +label=Resource Name
+   * +usage=The resource name where API is deployed.
+   * +sort=100
+   */
+  resource_name: string;
+  /**
+   * +label=API Version
+   * +usage=API version for the Content Safety API
+   * +sort=200
+   */
+  api_version: string;
+  /**
+   * +label=Custom Host
+   * +usage=Custom host for the PII detection API
+   * +sort=300
+   * +uiType=Hidden
+   */
+  custom_host?: string;
+  /**
+   * +label=Blocklist Names
+   * +usage=Array of blocklist names to check against
+   * +sort=400
+   */
+  blocklist_names?: string[];
+  /**
+   * +label=Severity
+   * +usage=Severity threshold for the Content Safety API
+   * +sort=500
+   */
+  severity_threshold: number;
+  /**
+   * +label=Categories
+   * +usage=Categories to check against
+   * +uiType=Select
+   * +sort=600
+   */
+  categories: AzureContentSafetyCategory[];
+  auth_data: AzureKeyAuth;
+}
+/**
  * +label=PostgreSQL on Kubernetes
  * +usage=Installs PostgreSQL as container in the cluster. Not recommended for production use.
  */
@@ -4592,6 +4897,7 @@ export interface AzureExistingDatabaseConfig {
   username: string;
   /**
    * +label=Database Password
+   * +uiType=Password
    */
   password: string;
 }
@@ -4614,6 +4920,22 @@ export interface AzureExistingNetwork {
    * +usage=The ID of your existing Subnet
    */
   subnet_id: string;
+}
+/**
+ * +label=Create Manually
+ * +usage=To manually create the integration follow the instructions for each service you want to integrate.
+ *
+ * [Blob Storage](https://docs.truefoundry.com/docs/integration-provider-azure#azure-blob-storage-abs-integration)
+ *
+ * [Container Registry](https://docs.truefoundry.com/docs/integration-provider-azure#azure-container-registry-acr-integration)
+ *
+ * [AKS Integration](https://docs.truefoundry.com/docs/integration-provider-azure#azure-aks-integration)
+ */
+export interface AzureExistingPlatform {
+  /**
+   * +value=existing
+   */
+  type: "existing";
 }
 /**
  * +label=Use Existing Resource Group
@@ -4918,7 +5240,7 @@ export interface AzureNewCluster {
    */
   node_pools: {
     cpu_pools: AzureNodePool[];
-    gpu_pools: AzureNodePool[];
+    gpu_pools?: AzureNodePool[];
   };
 }
 export interface AzureNodePool {
@@ -4991,6 +5313,30 @@ export interface AzureNewNetwork {
    * +message=Must be a valid IPv4 CIDR notation (e.g. 10.10.0.0/16). CIDR block size must be between /8 and /28. Recommended CIDR block size must be less /20
    */
   subnet_cidr: string;
+}
+/**
+ * +label=Create via Terraform
+ */
+export interface AzureNewPlatform {
+  /**
+   * +value=new
+   */
+  type: "new";
+  /**
+   * +label=Enable TrueFoundry Blob Storage
+   * +usage=Enable blob storage feature in the platform
+   */
+  enable_blob_storage: boolean;
+  /**
+   * +label=Enable TrueFoundry Registry
+   * +usage=Enable docker registry feature in the platform
+   */
+  enable_container_registry: boolean;
+  /**
+   * +label=Enable Cluster Integration
+   * +usage=Enable cluster integration through terraform which requires Azure AD developer access (Entra ID). Disable this to create app registration manually. Follow here for [Manual Setup](https://docs.truefoundry.com/docs/integration-provider-azure#azure-aks-integration)
+   */
+  enable_cluster_integration: boolean;
 }
 /**
  * +label=Create New Resource Group
@@ -5093,6 +5439,70 @@ export interface AzureOpenAIProviderAccount {
   collaborators?: Collaborator[];
 }
 /**
+ * +label=Azure PII
+ * +icon=azure
+ */
+export interface AzurePIIGuardrailConfig {
+  /**
+   * +label=Name
+   * +sort=50
+   * +usage=The name of the Guardrail Config.
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +uiType=Hidden
+   * +value=integration/guardrail-config/azure-pii
+   */
+  type: "integration/guardrail-config/azure-pii";
+  /**
+   * +label=Resource Name
+   * +usage=The resource name where API is deployed.
+   * +sort=50
+   */
+  resource_name: string;
+  /**
+   * +label=API Version
+   * +usage=API version for the Content Safety API
+   * +sort=100
+   */
+  api_version: string;
+  /**
+   * +label=Custom Host
+   * +usage=Custom host for the PII detection API
+   * +sort=200
+   * +uiType=Hidden
+   */
+  custom_host?: string;
+  /**
+   * +label=Domain
+   * +usage=Domain for PII detection
+   * +sort=400
+   */
+  domain: "none" | "healthcare";
+  /**
+   * +label=PII Categories
+   * +usage=Categories of PII to detect.
+   * +sort=500
+   * +uiType=MultiSelectPills
+   */
+  pii_categories: AzurePIICategory[];
+  /**
+   * +label=Model Version
+   * +usage=Version of the PII detection model to use
+   * +sort=600
+   */
+  model_version: string;
+  /**
+   * +label=Language Code
+   * +usage=Language code for PII detection
+   * +sort=700
+   */
+  language: string;
+  auth_data: AzureKeyAuth;
+}
+/**
  * +label=Azure
  * +icon=azure
  * +heroDataKey=subscription_id
@@ -5132,7 +5542,6 @@ export interface AzureTerraformConfig {
    * +uiType=Hidden
    */
   version: string;
-  backend: AzureBackendConfig;
   /**
    * +label=Location
    * +usage=The Azure region where resources will be created
@@ -5156,9 +5565,17 @@ export interface AzureTerraformConfig {
    */
   network: AzureNewNetwork | AzureExistingNetwork;
   /**
+   * +label=Resource Tags
+   * +usage=Key-value pairs to tag Azure resources
+   * +sort=5
+   */
+  tags?: {
+    [k: string]: string | {};
+  };
+  /**
    * +label=Control Plane Configuration
-   * +sort=6
    * +uiType=Hidden
+   * +sort=60
    * +uiProps={"forwardJsonKey":true}
    */
   truefoundry_control_plane?: {
@@ -5194,6 +5611,7 @@ export interface AzureTerraformConfig {
   /**
    * +label=Compute Plane Configuration
    * +uiType=Ignore
+   * +sort=61
    * +uiProps={"forwardJsonKey":true}
    */
   truefoundry_compute_plane?: {
@@ -5212,33 +5630,11 @@ export interface AzureTerraformConfig {
     /**
      * +label=Platform Features
      * +usage=Enable or disable platform features
+     * +label=Platform Configuration
      */
-    platform_features: {
-      /**
-       * +label=Enable TrueFoundry Blob Storage
-       * +usage=Enable blob storage feature in the platform
-       */
-      enable_blob_storage: boolean;
-      /**
-       * +label=Enable TrueFoundry Registry
-       * +usage=Enable docker registry feature in the platform
-       */
-      enable_container_registry: boolean;
-      /**
-       * +label=Enable Cluster Integration
-       * +usage=Enable cluster integration through terraform which requires Azure AD developer access (Entra ID). Disable this to create app registration manually. Follow here for [Manual Setup](https://docs.truefoundry.com/docs/integration-provider-azure#azure-aks-integration)
-       */
-      enable_cluster_integration: boolean;
-    };
+    platform_features: AzureNewPlatform | AzureExistingPlatform;
   };
-  /**
-   * +label=Resource Tags
-   * +usage=Key-value pairs to tag Azure resources
-   * +sort=7
-   */
-  tags?: {
-    [k: string]: string | {};
-  };
+  backend: AzureBackendConfig;
 }
 /**
  * +label=OAuth2 Client Configuration
@@ -5256,7 +5652,7 @@ export interface BaseOAuth2Login {
    * +usage=Client secret or the TrueFoundry secret containing the client secret for OAuth2.
    * +sort=300
    */
-  client_secret: string;
+  client_secret?: string;
   /**
    * +label=Authorization URL
    * +usage=URL for the authorization request
@@ -5387,6 +5783,280 @@ export interface BudgetWhen {
     [k: string]: string;
   };
 }
+/**
+ * +label=System Message
+ * +usage=System message for the chat
+ */
+export interface SystemMessage {
+  /**
+   * +value=system
+   * +label=Role
+   * +usage=Role of the message
+   * +uiType=Ignore
+   */
+  role: "system";
+  /**
+   * +label=Content
+   * +usage=Text content for the system message
+   * +uiType=CodeEditor
+   * +uiProps={"language": "text"}
+   */
+  content: string | BlobStorageReference;
+  /**
+   * +label=Name
+   * +usage=Name of the system
+   */
+  name?: string;
+}
+/**
+ * +label=User Message
+ * +usage=User message turn
+ */
+export interface UserMessage {
+  /**
+   * +value=user
+   * +usage=Role of the message
+   * +uiType=Ignore
+   */
+  role: "user";
+  /**
+   * +label=Content
+   * +usage=Content of the user message. can be a mix of text and images
+   * +uiType=CodeEditor
+   * +uiProps={"language": "text"}
+   */
+  content:
+    | string
+    | (TextContentPart | ImageContentPart)[]
+    | BlobStorageReference;
+  /**
+   * +label=Name
+   * +usage=Name of the user this message is from
+   */
+  name?: string;
+}
+/**
+ * +label=Image Content
+ * +usage=Image content for the message
+ */
+export interface ImageContentPart {
+  /**
+   * +value=image_url
+   * +usage=Type of the content part
+   */
+  type: "image_url";
+  /**
+   * +label=Image URL
+   * +usage=Image URL linking to the image
+   */
+  image_url: {
+    /**
+     * +label=URL
+     * +usage=Image URL linking to the image
+     */
+    url: string | BlobStorageReference;
+    /**
+     * +label=Details
+     */
+    detail?: string;
+  };
+}
+/**
+ * +label=Tool Message
+ * +usage=Tool message for the chat
+ */
+export interface ToolMessage {
+  /**
+   * +label=Role
+   * +usage=Role of the message
+   */
+  role: "tool";
+  /**
+   * +label=Content
+   * +usage=Content of the tool call result
+   */
+  content: string | BlobStorageReference;
+  /**
+   * +label=Tool Call ID
+   * +usage=Unique identifier for the tool call
+   */
+  tool_call_id: string;
+}
+/**
+ * +label=Developer Message
+ * +usage=Developer message for the chat
+ */
+export interface DeveloperMessage {
+  /**
+   * +value=Developer
+   * +label=Role
+   * +usage=The role of the messages author, in this case developer.
+   */
+  role: "developer";
+  /**
+   * +label=Content
+   * +usage=The contents of the developer message.
+   */
+  content: string | BlobStorageReference;
+  /**
+   * +label=Name
+   * +usage=An optional name for the participant.
+   */
+  name?: string;
+}
+/**
+ * +label=Model Configuration
+ * +icon=fa-cogs:#326ce5
+ * +usage=Add a model from Gateway along with parameters to be used for chat completion
+ */
+export interface ModelConfiguration {
+  /**
+   * +sort=1000
+   * +uiType=SelectModelAndProvider
+   * +uiProps={"isModel": false,"providerJsonKey": "model_configuration.provider","searchable": true}
+   * +label=Provider Name
+   * +usage=Name of the provider, must be one of the integration providers configured for the Gateway
+   */
+  provider: string;
+  /**
+   * +sort=1001
+   * +uiType=SelectModelAndProvider
+   * +uiProps={"isModel": true,"providerJsonKey": "model_configuration.provider","searchable": true}
+   * +label=Model Name
+   * +usage=Name of the model to be used for generations. This model should be available in the provider
+   */
+  model: string;
+  /**
+   * +label=Parameters
+   * +usage=Parameters to pass to the model when generating
+   */
+  parameters?: {
+    max_tokens?: number;
+    temperature?: number;
+    top_k?: number;
+    top_p?: number;
+    stop?: string[] | string;
+  };
+  /**
+   * +label=Extra Parameters
+   * +usage=Arbitrary extra parameters to pass to the model when generating
+   */
+  extra_parameters?: {};
+}
+/**
+ * +label=Tool Schema
+ * +usage=Schema defining a tool for the chat prompt
+ */
+export interface ToolSchema {
+  /**
+   * +label=Type
+   * +usage=Type of the tool
+   */
+  type: "function";
+  function: FunctionSchema;
+}
+/**
+ * +label=Function Schema
+ * +usage=Schema defining a function for tool calls
+ */
+export interface FunctionSchema {
+  /**
+   * +label=Function Name
+   * +usage=Name of the function
+   */
+  name: string;
+  /**
+   * +label=Description
+   * +usage=Description of the function
+   */
+  description: string;
+  /**
+   * +label=Parameters
+   * +usage=Parameters schema for the function
+   * +uiType=JsonInput
+   * +uiProps={"descriptionInline":true}
+   */
+  parameters?: {};
+  /**
+   * +label=Strict
+   * +usage=Indicates if the function should be called strictly
+   */
+  strict: boolean;
+}
+/**
+ * +label=MCP Server FQN
+ * +icon=puzzle-piece
+ * +usage=MCP server with FQN
+ */
+export interface MCPServerWithFQN {
+  /**
+   * +label=MCP Server FQN Type
+   * +usage=The FQN of the MCP server
+   * +value=mcp-server-fqn
+   */
+  type: "mcp-server-fqn";
+  /**
+   * +label=MCP Server Integration FQN
+   * +usage=The FQN of the MCP server
+   */
+  integration_fqn: string;
+  /**
+   * +label=Enable All Tools
+   * +usage=Whether to enable all tools from the MCP server
+   */
+  enable_all_tools: boolean;
+  /**
+   * +label=Tools
+   * +usage=The tools to enable from the MCP server
+   */
+  tools?: MCPTool[];
+}
+/**
+ * +label=MCP Tool
+ * +usage=Tool configuration for MCP server
+ */
+export interface MCPTool {
+  /**
+   * +label=Name
+   * +usage=The name of the tool as it appears in the MCP server
+   */
+  name: string;
+}
+/**
+ * +label=MCP Server URL
+ * +icon=puzzle-piece
+ * +usage=MCP server with URL
+ */
+export interface MCPServerWithURL {
+  /**
+   * +label=URL
+   * +usage=The URL of the MCP server
+   * +value=mcp-server-url
+   */
+  type: "mcp-server-url";
+  /**
+   * +label=URL
+   * +usage=The URL of the MCP server
+   */
+  url: string;
+  /**
+   * +label=Headers
+   * +usage=The headers to send to the MCP server
+   */
+  headers?: {
+    [k: string]: string;
+  };
+  /**
+   * +label=Enable All Tools
+   * +usage=Whether to enable all tools from the MCP server
+   */
+  enable_all_tools: boolean;
+  /**
+   * +label=Tools
+   * +usage=The tools to enable from the MCP server
+   */
+  tools?: MCPTool[];
+}
 export interface ClusterManifest {
   /**
    * +value=cluster
@@ -5438,6 +6108,10 @@ export interface ClusterManifest {
      * +label=Cluster Loki URL
      */
     loki_url?: string;
+    /**
+     * +label=Cluster VictoriaLogs URL
+     */
+    victoria_logs_url?: string;
     /**
      * +label=Cluster Prometheus URL
      */
@@ -5707,6 +6381,56 @@ export interface CohereProviderAccount {
    */
   collaborators?: Collaborator[];
 }
+/**
+ * +docs=Describes the configuration for Common Tools MCP Server in AI Gateway
+ * +label=Common Tools Settings
+ */
+export interface CommonToolsSettings {
+  /**
+   * +value=settings/common-tools
+   */
+  type: "settings/common-tools";
+  /**
+   * +label=Web Search
+   * +usage=Enable web search tool
+   * Allows model to search the web for information.
+   * +icon=fa-searchengin
+   * +sort=1
+   */
+  web_search: boolean;
+  /**
+   * +label=Code Executor
+   * +usage=Enable code executor tool
+   * Allows model to execute code and return the results.
+   * +icon=fa-code
+   * +sort=2
+   */
+  code_executor: boolean;
+  /**
+   * +label=Sequential Thinking
+   * +usage=Enable sequential thinking tool
+   * Allows model to reason step-by-step to solve complex problems.
+   * +icon=fa-brain
+   * +sort=3
+   */
+  sequential_thinking: boolean;
+  /**
+   * +label=Vision OCR
+   * +usage=Enable vision OCR tool
+   * Allows model to extract text from images or PDFs.
+   * +icon=fa-eye
+   * +sort=4
+   */
+  vision_ocr: boolean;
+  /**
+   * +label=Web Scrape
+   * +usage=Enable web scraping tool.
+   * Allows model to scrape content from web pages with intelligent format selection for structured or unstructured data.
+   * +icon=fa-brands fa-readme
+   * +sort=5
+   */
+  web_scrape: boolean;
+}
 export interface ContainerTaskConfig {
   /**
    * +value=container-task-config
@@ -5733,7 +6457,7 @@ export interface ContainerTaskConfig {
    * +usage=Configure data to be mounted to Workflow pod(s) as a volume.
    * +sort=400
    */
-  mounts?: (SecretMount | StringDataMount | VolumeMount)[];
+  mounts?: VolumeMount[];
   /**
    * +label=Service Account
    * +sort=500
@@ -5809,6 +6533,67 @@ export interface CustomBlobStorage {
    * +uiType=AuthorizedSubjects
    */
   authorized_subjects?: string[];
+}
+/**
+ * +label=Custom
+ * +icon=puzzle-piece
+ */
+export interface CustomGuardrailConfig {
+  /**
+   * +label=Name
+   * +sort=50
+   * +usage=The name of the Guardrail Config.
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +uiType=Hidden
+   * +value=integration/guardrail-config/custom
+   */
+  type: "integration/guardrail-config/custom";
+  /**
+   * +label=Operation
+   * +usage=The operation type to use for the Guardrail. Validate guardrails are used to validate requests and mutate can validate as well as mutate requests.
+   * Validate guardrails are run in parallel while mutate guardrails are run sequentially.
+   * +uiType=Select
+   * +sort=100
+   */
+  operation: "validate" | "mutate";
+  /**
+   * +label=Target
+   * +usage=Specify whether the guardrail should be applied to the request or response. Guardrails with target "Request" can be only used in input guardrails and guardrails with target "Response" can only be used in output guardrails.
+   * +uiType=Select
+   * +sort=200
+   */
+  target: "request" | "response";
+  /**
+   * +label=URL
+   * +sort=300
+   * +usage=The URL of the Guardrail to send a post request to.
+   */
+  url: string;
+  /**
+   * +label=Auth Data
+   * +sort=450
+   * +usage=Authentication data for the Guardrail Server.
+   */
+  auth_data?: CustomBasicAuth | CustomBearerAuth;
+  /**
+   * +label=Headers
+   * +sort=500
+   * +usage=Headers for the Guardrail Server. Forwarded to the Guardrail Server as is. For example: `{"Authorization": "APIKey <token>"}`
+   */
+  headers?: {
+    [k: string]: string;
+  };
+  /**
+   * +label=Config
+   * +sort=600
+   * +uiType=JsonInput
+   * +usage=The config for the Guardrail Server. This is a JSON object that will be sent as a config to Guardrail Server along with the request.
+   */
+  config: {};
 }
 /**
  * +label=Custom Helm Repo
@@ -6084,45 +6869,14 @@ export interface MCPServerHeaderAuth {
   };
 }
 /**
- * +label=Slack OAuth2
+ * +label=Login with truefoundry
+ * +usage=Use TrueFoundry authentication with PAT or Virtual Accounts for secure access based on your TrueFoundry identity.
  */
-export interface MCPServerSlackOAuth2 {
+export interface MCPServerPassthrough {
   /**
-   * +value=slack-oauth2
+   * +value=passthrough
    */
-  type: "slack-oauth2";
-  /**
-   * +label=Client ID
-   * +usage=client ID for OAuth2.
-   * +sort=200
-   */
-  client_id: string;
-  /**
-   * +label=Client Secret
-   * +usage=Client secret or the TrueFoundry secret containing the client secret for OAuth2.
-   * +sort=300
-   */
-  client_secret: string;
-  /**
-   * Override the default authorization_url
-   * +label=Slack Authorization URL
-   * +usage=URL for the authorization request
-   * +sort=400
-   */
-  authorization_url: string;
-  /**
-   * Override the default token_url
-   * +label=Slack Token URL
-   * +usage=The endpoint to exchange auth code for tokens.
-   * +sort=500
-   */
-  token_url: string;
-  /**
-   * +label=Scopes
-   * +usage=List of scopes to request from the OAuth2 provider.
-   * +sort=600
-   */
-  scopes: string[];
+  type: "passthrough";
 }
 /**
  * +label=Custom
@@ -6191,8 +6945,7 @@ export interface DataDirectory {
   source: TrueFoundryManagedSource | ExternalBlobStorageSource;
 }
 /**
- * +label=Databricks API Key Auth
- * +icon=databricks
+ * +label=Databricks API Key Based Auth
  */
 export interface DatabricksApiKeyAuth {
   /**
@@ -6201,9 +6954,8 @@ export interface DatabricksApiKeyAuth {
   type: "api-key";
   /**
    * +label=API Key
+   * +usage=API key for Databricks authentication.
    * +sort=100
-   * +usage=The API key for Databricks authentication
-   * +message=API key must not be empty
    * +uiType=Password
    */
   api_key: string;
@@ -6303,7 +7055,12 @@ export interface DatabricksProviderAccount {
    * +uiProps={"disableEdit":true}
    */
   name: string;
-  auth_data: DatabricksApiKeyAuth;
+  /**
+   * +label=Auth Data
+   * +sort=300
+   * +usage=Databricks authentication credentials
+   */
+  auth_data: DatabricksServicePrincipalAuth | DatabricksApiKeyAuth;
   /**
    * +label=Base URL
    * +sort=400
@@ -6325,6 +7082,30 @@ export interface DatabricksProviderAccount {
    * +uiType=Collaborators
    */
   collaborators?: Collaborator[];
+}
+/**
+ * +label=Databricks Service Principal Auth
+ * +usage=You can authenticate using Databricks service principal. To generate OAuth secret and Client ID, go to Databricks workspace -> Workspace Settings -> Identity and Access -> Service Principals -> Secrets.
+ */
+export interface DatabricksServicePrincipalAuth {
+  /**
+   * +value=service-principal
+   */
+  type: "service-principal";
+  /**
+   * +label=OAuth Secret
+   * +usage=OAuth secret of the Databricks service principal.
+   * +sort=200
+   * +uiType=Password
+   */
+  oauth_secret: string;
+  /**
+   * +label=Client ID
+   * +usage=Client ID or Application ID of the Databricks service principal.
+   * +sort=100
+   * +uiType=Password
+   */
+  client_id: string;
 }
 /**
  * +label=DeepInfra Model
@@ -6453,6 +7234,24 @@ export interface DeepinfraProviderAccount {
    */
   collaborators?: Collaborator[];
 }
+export interface DeprecatedTracingProjectManifest {
+  /**
+   * +value=tracing-project
+   */
+  type: "tracing-project";
+  /**
+   * +label=Name
+   * +usage=Name of the tracing project
+   * +message=The name should start with lowercase alphabets  and can contain alphanumeric and can include '-' in between
+   */
+  name: string;
+  /**
+   * +label=ML Repo
+   * +usage=Name of the ML Repo
+   * +uiType=Hidden
+   */
+  ml_repo?: string;
+}
 /**
  * +label=Dockerhub Basic Auth
  */
@@ -6556,7 +7355,7 @@ export interface DockerhubRegistry {
   authorized_subjects?: string[];
 }
 /**
- * +label=Dynamic Volume Config
+ * +label=Create new volume
  */
 export interface DynamicVolumeConfig {
   /**
@@ -6571,7 +7370,7 @@ export interface DynamicVolumeConfig {
    */
   storage_class: string;
   /**
-   * +label=Size
+   * +label=Size(Gi)
    * +unit=Gi
    * +usage=Size of volume in Gi
    */
@@ -6685,7 +7484,7 @@ export interface FlyteTaskID {
   name: string;
 }
 export interface FlyteTaskCustom {
-  truefoundry: PythonTaskConfig | ContainerTaskConfig;
+  truefoundry: PythonTaskConfig | ContainerTaskConfig | PySparkTaskConfig;
 }
 /**
  * +docs=Describes the configuration for the python function task
@@ -6808,6 +7607,139 @@ export interface TaskDockerFileBuild {
     [k: string]: string;
   };
 }
+export interface PySparkTaskConfig {
+  /**
+   * +value=pyspark-task-config
+   */
+  type: "pyspark-task-config";
+  image: TaskPySparkBuild;
+  driver_config: SparkDriverConfig;
+  executor_config: SparkExecutorConfig;
+  /**
+   * +label=Spark Config Properties
+   * +usage=Extra configuration properties to be passed to the spark job. [Docs](https://spark.apache.org/docs/latest/configuration.html)
+   * +icon=fa-gear:#68BBE3
+   * +sort=3000
+   */
+  spark_conf?: {} | null;
+  /**
+   * +label=Environment Variables
+   * +usage=Configure environment variables to be injected in the task either as plain text or secrets. [Docs](https://docs.truefoundry.com/docs/env-variables)
+   * +icon=fa-globe
+   * +sort=4000
+   */
+  env?: {
+    [k: string]: string;
+  } | null;
+  /**
+   * +usage=Configure data to be mounted to Workflow pod(s) as a volume.
+   * +sort=5000
+   */
+  mounts?: (SecretMount | StringDataMount | VolumeMount)[];
+  /**
+   * +label=Service Account
+   * +sort=6000
+   */
+  service_account?: string;
+}
+/**
+ * +docs=Describes the configuration for the PySpark build for a task
+ * +label=PySpark Build Spec
+ * +icon=fa-brands fa-python:#306998
+ */
+export interface TaskPySparkBuild {
+  /**
+   * +value=task-pyspark-build
+   */
+  type: "task-pyspark-build";
+  /**
+   * --- Spark Specific Field ---
+   * +label=Spark Version
+   * +usage=Spark version should match the spark version installed in the image.
+   * +sort=1001
+   */
+  spark_version: string;
+  /**
+   * +docs=FQN of the container registry. You can the FQN of your desired container registry (or add one)
+   * in the  Integrations page[Integrations](https://app.truefoundry.tech/integrations?tab=docker-registry) page
+   * +label=Docker Registry
+   * +usage=FQN of the container registry. If you can't find your registry here,
+   * add it through the [Integrations](/integrations?tab=docker-registry) page
+   */
+  docker_registry?: string;
+  /**
+   * `Path to build context`
+   * +label=Path to requirements
+   * +usage=Path to `requirements.txt` relative to
+   * `Path to build context`
+   */
+  requirements_path?: string;
+  /**
+   * +label=Pip packages to install
+   * +usage=Define pip package requirements.
+   * In Python/YAML E.g. ["fastapi>=0.90,<1.0", "uvicorn"]
+   * +placeholder=Enter a pip package name E.g. fastapi>=0.90,<1.0
+   */
+  pip_packages?: string[];
+  /**
+   * +label=List of Debian packages to install.
+   * +usage=Debian packages to install via `apt get`.
+   * In Python/YAML E.g. ["git", "ffmpeg", "htop"]
+   * +placeholder=Enter a debian package name E.g. ffmpeg
+   */
+  apt_packages?: string[];
+}
+/**
+ * +label=Driver Config
+ */
+export interface SparkDriverConfig {
+  resources?: Resources;
+}
+/**
+ * +label=Executor Config
+ */
+export interface SparkExecutorConfig {
+  /**
+   * +label=Executor Instances
+   */
+  instances: SparkExecutorFixedInstances | SparkExecutorDynamicScaling;
+  resources?: Resources;
+}
+/**
+ * +label=Fixed Instances
+ */
+export interface SparkExecutorFixedInstances {
+  /**
+   * +value=fixed
+   */
+  type: "fixed";
+  /**
+   * +label=Instances Count
+   * +usage=Number of instances to start
+   */
+  count: number;
+}
+/**
+ * +label=Dynamic Scaling
+ */
+export interface SparkExecutorDynamicScaling {
+  /**
+   * +value=dynamic
+   */
+  type: "dynamic";
+  /**
+   * +label=Min Instances
+   * +usage=Minimum number of instances to start / scale down to
+   * +sort=100
+   */
+  min: number;
+  /**
+   * +label=Max Instances
+   * +usage=Maximum number of instances to scale up to
+   * +sort=200
+   */
+  max: number;
+}
 export interface FlyteWorkflow {
   template: FlyteWorkflowTemplate;
   description?: unknown;
@@ -6919,9 +7851,9 @@ export interface GCPAddons {
    * +uiProps={"forwardJsonKey":true}
    * +sort=8
    */
-  loki: {
+  tfy_logs: {
     /**
-     * +label=Install Loki for logging
+     * +label=Install VictoriaLogs for logging
      */
     enabled: boolean;
   };
@@ -7024,6 +7956,7 @@ export interface GCPExistingDatabaseConfig {
   username: string;
   /**
    * +label=Database Password
+   * +uiType=Password
    */
   password: string;
 }
@@ -7342,10 +8275,6 @@ export interface GuardrailsConfig {
    * +usage=List of guardrail rules
    */
   rules: GuardrailsRule[];
-  /**
-   * +usage=URL of the guardrails service
-   */
-  guardrails_service_url: string;
 }
 export interface GuardrailsRule {
   /**
@@ -7354,13 +8283,13 @@ export interface GuardrailsRule {
   id: string;
   when: GuardrailsWhen;
   /**
-   * +usage=Guardrails to apply to the input
+   * +usage=Guardrail selectors of the guardrails to apply to the input (format: groupName/guardrailName)
    */
-  input_guardrails: GuardrailConfig[];
+  input_guardrails: string[];
   /**
-   * +usage=Guardrails to apply to the output
+   * +usage=Guardrail selectors of the guardrails to apply to the output (format: groupName/guardrailName)
    */
-  output_guardrails: GuardrailConfig[];
+  output_guardrails: string[];
 }
 export interface GuardrailsWhen {
   /**
@@ -7377,23 +8306,6 @@ export interface GuardrailsWhen {
   metadata?: {
     [k: string]: string;
   };
-}
-export interface GuardrailConfig {
-  /**
-   * +usage=Type of the guardrail
-   */
-  type: string;
-  /**
-   * +usage=Action to perform with the guardrail
-   */
-  action: "validate" | "transform";
-  options: GuardrailsOptions;
-}
-export interface GuardrailsOptions {
-  /**
-   * Generic options structure that can be extended based on guardrail type
-   */
-  [k: string]: {};
 }
 /**
  * +label=GCP API Key Auth
@@ -7764,9 +8676,9 @@ export interface GenericAddons {
    * +uiType=Ignore
    * +uiProps={"forwardJsonKey":true}
    */
-  loki: {
+  tfy_logs: {
     /**
-     * +label=Install Loki for logging
+     * +label=Install VictoriaLogs for logging
      */
     enabled: boolean;
   };
@@ -7780,6 +8692,16 @@ export interface GenericAddons {
      */
     enabled: boolean;
   };
+  /**
+   * +uiType=Ignore
+   * +uiProps={"forwardJsonKey":true}
+   */
+  cert_manager: {
+    /**
+     * +label=Install Certificate Manager for automated certificate management
+     */
+    enabled: boolean;
+  };
 }
 export interface GenericExistingCluster {
   /**
@@ -7790,6 +8712,7 @@ export interface GenericExistingCluster {
    * +label=Existing cluster name
    * +icon=fa-cube:#black
    * +sort=201
+   * +message=Cluster name must be between 3 to 35 lower case characters long alphanumeric word, may contain - in between, cannot start with a number, and cannot end with a hyphen.
    */
   name: string;
   addons: GenericAddons;
@@ -8157,6 +9080,105 @@ export interface GroqProviderAccount {
    * +uiType=Collaborators
    */
   collaborators?: Collaborator[];
+}
+/**
+ * +label=Guardrail Configs Group
+ * +icon=puzzle-piece
+ */
+export interface GuardrailConfigGroup {
+  /**
+   * +uiType=Hidden
+   * +value=provider-account/guardrail-config-group
+   */
+  type: "provider-account/guardrail-config-group";
+  /**
+   * +label=Name
+   * +sort=100
+   * +usage=The name of the Guardrail Config Group.
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +label=Access Control
+   * +sort=200
+   * +usage=List of users who have access to this Guardrail Config Group.
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+  /**
+   * +label=Guardrail Configs
+   * +usage=List of Guardrail Configs, which are part of this Guardrail Config Group.
+   * +sort=400
+   * +uiType=IntegrationsGroup
+   */
+  integrations: GuardrailConfigIntegrations[];
+}
+/**
+ * +label=OpenAI Moderation
+ * +icon=openai
+ */
+export interface OpenAIModerationsGuardrailConfig {
+  /**
+   * +label=Name
+   * +sort=50
+   * +usage=The name of the Guardrail Config.
+   * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
+   * +uiProps={"disableEdit":true}
+   */
+  name: string;
+  /**
+   * +value=integration/guardrail-config/openai-moderations
+   * +sort=50
+   * +uiType=Hidden
+   */
+  type: "integration/guardrail-config/openai-moderations";
+  /**
+   * +label=Base URL
+   * +sort=100
+   * +usage=Optional custom base URL for OpenAI API. If not provided, the default base URL will be used.
+   */
+  base_url?: string;
+  auth_data: OpenaiApiKeyAuth;
+  /**
+   * +label=OpenAI Moderation Model
+   * +sort=300
+   * +usage=The model to use for the OpenAI Moderation API.
+   */
+  model: string;
+  /**
+   * +label=Category Thresholds
+   * +sort=400
+   * +usage=The thresholds for the OpenAI Moderation API.
+   * +uiType=KV
+   */
+  category_thresholds?: {
+    [k: string]:
+      | number
+      | {
+          harassment: 0.5;
+          sexual: 0.5;
+          violence: 0.5;
+        };
+  };
+}
+/**
+ * +label=OpenAI API Key Auth
+ * +icon=openai
+ */
+export interface OpenaiApiKeyAuth {
+  /**
+   * +value=api-key
+   */
+  type: "api-key";
+  /**
+   * +label=API Key
+   * +sort=100
+   * +usage=Your OpenAI API key for authentication
+   * +message=API key must not be empty
+   * +uiType=Password
+   */
+  api_key: string;
 }
 /**
  * +label=H2O
@@ -9506,57 +10528,6 @@ export interface SparkJobPythonNotebookEntrypoint {
    */
   main_application_file: string;
 }
-/**
- * +label=Driver Config
- */
-export interface SparkDriverConfig {
-  resources?: Resources;
-}
-/**
- * +label=Executor Config
- */
-export interface SparkExecutorConfig {
-  /**
-   * +label=Executor Instances
-   */
-  instances: SparkExecutorFixedInstances | SparkExecutorDynamicScaling;
-  resources?: Resources;
-}
-/**
- * +label=Fixed Instances
- */
-export interface SparkExecutorFixedInstances {
-  /**
-   * +value=fixed
-   */
-  type: "fixed";
-  /**
-   * +label=Instances Count
-   * +usage=Number of instances to start
-   */
-  count: number;
-}
-/**
- * +label=Dynamic Scaling
- */
-export interface SparkExecutorDynamicScaling {
-  /**
-   * +value=dynamic
-   */
-  type: "dynamic";
-  /**
-   * +label=Min Instances
-   * +usage=Minimum number of instances to start / scale down to
-   * +sort=100
-   */
-  min: number;
-  /**
-   * +label=Max Instances
-   * +usage=Maximum number of instances to scale up to
-   * +sort=200
-   */
-  max: number;
-}
 export interface Volume {
   /**
    * +value=volume
@@ -9583,7 +10554,7 @@ export interface Volume {
   workspace_fqn?: string;
 }
 /**
- * +label=Static Volume Config
+ * +label=Use existing volume
  */
 export interface StaticVolumeConfig {
   /**
@@ -9972,7 +10943,7 @@ export interface TeamManifest {
    */
   members: string[];
 }
-export interface Policy {
+export interface PolicyManifest {
   /**
    * +value=policy
    */
@@ -10083,23 +11054,65 @@ export interface PolicyFilters {
    */
   env_names?: string[];
 }
-export interface TracingProject {
+/**
+ * +label=Tracing Project
+ * +usage=Tracing Project is an entity that allows you to manage and monitor telemetry data.
+ */
+export interface TracingProjectManifest {
   /**
    * +value=tracing-project
    */
   type: "tracing-project";
   /**
    * +label=Name
-   * +usage=Name of the tracing project
-   * +message=The name should start with lowercase alphabets  and can contain alphanumeric and can include '-' in between
+   * +icon=fa-desktop:#black
+   * +usage=Name of the Tracing Project
+   * +message=Alphanumeric word, may contain '-' with a maximum length of 100 characters
+   * +sort=1
    */
   name: string;
   /**
-   * +label=ML Repo
-   * +usage=Name of the ML Repo
+   * +label=Description
+   * +icon=fa-desktop:#black
+   * +usage=Description for the Tracing Project.
+   * +message=Description can be maximum 500 characters
+   * +sort=2
+   * +placeholder=Tracing Project for Team A applications
+   * +uiProps={"descriptionInline":true}
+   */
+  description?: string;
+  /**
+   * +label=Collaborators
+   * +sort=3
+   * +usage=Users and Teams that have access to Tracing Project
+   * +uiType=Collaborators
+   */
+  collaborators: Collaborator[];
+}
+/**
+ * +label=Tracing Application
+ * +usage=Tracing Application is an entity that represents an application within a Tracing Project.
+ */
+export interface TracingApplicationManifest {
+  /**
+   * +value=tracing-application
+   */
+  type: "tracing-application";
+  /**
+   * +label=Name
+   * +icon=fa-desktop:#black
+   * +usage=Name of the Tracing Application
+   * +message=Alphanumeric word, may contain '-' with a maximum length of 100 characters
+   * +sort=1
+   */
+  name: string;
+  /**
+   * +label=Tracing Project FQN
+   * +icon=fa-desktop:#black
+   * +usage=FQN of the Tracing Project this application belongs to
    * +uiType=Hidden
    */
-  ml_repo?: string;
+  tracing_project_fqn: string;
 }
 /**
  * +label=Mistral AI Provider Account
@@ -10443,24 +11456,6 @@ export interface OpenaiProviderAccount {
   collaborators?: Collaborator[];
 }
 /**
- * +label=OpenAI API Key Auth
- * +icon=openai
- */
-export interface OpenaiApiKeyAuth {
-  /**
-   * +value=api-key
-   */
-  type: "api-key";
-  /**
-   * +label=API Key
-   * +sort=100
-   * +usage=Your OpenAI API key for authentication
-   * +message=API key must not be empty
-   * +uiType=Password
-   */
-  api_key: string;
-}
-/**
  * +label=Self Hosted
  * +icon=puzzle-piece
  */
@@ -10486,7 +11481,7 @@ export interface SelfHostedModelProviderAccount {
   integrations: SelfHostedModelIntegrations[];
   /**
    * +label=Collaborators
-   * +sort=500
+   * +sort=200
    * +uiType=Collaborators
    */
   collaborators?: Collaborator[];
@@ -10555,7 +11550,7 @@ export interface SelfHostedModelIntegrations {
   authorized_subjects?: string[];
 }
 /**
- * +label=MCPServer Provider Account
+ * +label=MCP Server Group
  * +icon=puzzle-piece
  */
 export interface MCPServerProviderAccount {
@@ -10566,28 +11561,28 @@ export interface MCPServerProviderAccount {
   /**
    * +label=Name
    * +sort=100
-   * +usage=The name of the MCPServer provider account
+   * +usage=The name of the MCP Server Group.
    * +message=3 to 32 lower case characters long alphanumeric word, may contain - in between, cannot start with a number
    * +uiProps={"disableEdit":true}
    */
   name: string;
   /**
-   * +label=Integrations
-   * +usage=List of integrations that are associated with the provider account.
+   * +label=Access Control
+   * +sort=200
+   * +usage=List of users who have access to this MCP Server Group.
+   * +uiType=Collaborators
+   */
+  collaborators?: Collaborator[];
+  /**
+   * +label=MCP Servers
+   * +usage=List of MCP Servers, which are part of this MCP Server Group.
    * +sort=400
    * +uiType=IntegrationsGroup
    */
   integrations: MCPServerIntegrations[];
-  /**
-   * +label=Collaborators
-   * +sort=500
-   * +usage=List of users who have access to this provider account
-   * +uiType=Collaborators
-   */
-  collaborators?: Collaborator[];
 }
 /**
- * +label=MCPServer Integration
+ * +label=MCP Server
  * +icon=puzzle-piece
  */
 export interface MCPServerIntegrations {
@@ -10597,32 +11592,175 @@ export interface MCPServerIntegrations {
   type: "integration/mcp-server/hosted-mcp-server";
   /**
    * +label=Name
-   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +usage=The name of the MCP Server.
    * +sort=100
    */
   name: string;
   /**
    * +label=Description
+   * +usage=Provide a brief description of the purpose of this MCP Server.
    * +uiType=TextArea
-   * +usage=The Description of the integration that will be displayed in the TrueFoundry UI.
+   * +message=1 to 1000 characters long, may contain any character except newlines
    * +sort=200
    * +uiProps={"descriptionInline":true}
    */
   description: string;
   /**
    * +label=URL
-   * +usage=The endpoint URL for the MCP server.
+   * +usage=The endpoint URL for the MCP Server. The system will first try a connection using streamable-http transport on this URL. If that fails, it will attempt a connection using SSE transport on <url>/sse.
    * +sort=300
    */
   url: string;
   auth_data?: MCPServerAuth;
+}
+/**
+ * +docs=Describes the SSO configuration settings
+ * +label=SSO Settings
+ */
+export interface SSOSettings {
   /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=500
-   * +uiType=AuthorizedSubjects
+   * +value=settings/sso
    */
-  authorized_subjects?: string[];
+  type: "settings/sso";
+  /**
+   * +label=Enabled
+   * +usage=Enable/Disable SSO.
+   * Other fields only apply when this is true
+   * +sort=1
+   */
+  enabled: boolean;
+  /**
+   * +label=SSO Provider
+   * +usage=Select the SSO provider type
+   * +sort=100
+   * +uiType=Select
+   */
+  provider: "custom" | "google" | "azure-ad" | "okta";
+  /**
+   * +label=Authentication Configuration
+   * +usage=Authentication configuration for the SSO provider
+   * +sort=200
+   */
+  auth_data: SAMLAuth | OIDCAuth;
+  /**
+   * +label=Button Text
+   * +usage=Custom text for the login button(Eg. Login with Google)
+   * +sort=300
+   * +message=Button text must not be empty if provided
+   */
+  button_text?: string;
+  /**
+   * +label=Button Image URL
+   * +usage=Custom image URL for the login button
+   * +sort=400
+   * +message=Must be a valid HTTPS URL
+   */
+  button_image_url?: string;
+  /**
+   * +label=Email Claim
+   * +usage=The claim name to use for email mapping
+   * +sort=500
+   * +message=Email claim must not be empty if provided
+   */
+  email_claim?: string;
+  /**
+   * +label=Unique ID Claim
+   * +usage=The claim name to use for unique ID mapping (defaults to 'sub')
+   * +sort=600
+   * +message=Unique ID claim must not be empty if provided
+   */
+  unique_id_claim?: string;
+}
+/**
+ * SAML Configuration for Identity Provider
+ * +label=SAML v2
+ */
+export interface SAMLAuth {
+  /**
+   * +value=saml
+   */
+  type: "saml";
+  /**
+   * +label=Identity Provider Endpoint
+   * +usage=The full URL of the SAML v2 login endpoint
+   * +sort=100
+   * +message=Must be a valid HTTPS URL
+   */
+  idp_endpoint: string;
+  /**
+   * +label=X.509 Certificate
+   * +usage=The certificate that should be used to verify the signature of the SAML response
+   * +sort=300
+   * +uiType=TextArea
+   * +message=Certificate must not be empty
+   */
+  certificate: string;
+}
+/**
+ * OIDC Configuration for Identity Provider
+ * +label=OIDC
+ */
+export interface OIDCAuth {
+  /**
+   * +value=oidc
+   */
+  type: "oidc";
+  /**
+   * +label=Client ID
+   * +usage=The client ID that will be used during the authentication workflow with this provider
+   * +sort=100
+   * +message=Client ID must not be empty
+   */
+  client_id: string;
+  /**
+   * +label=Client Secret
+   * +usage=The client secret that will be used during the authentication workflow with this provider
+   * +sort=200
+   * +uiType=Password
+   * +message=Client Secret must not be empty
+   */
+  client_secret: string;
+  /**
+   * +label=Discover endpoints
+   * +usage=Enable discovery to allow the required endpoints to be discovered using the OpenID Connect well-known configuration
+   * +sort=250
+   */
+  discover_endpoints: boolean;
+  /**
+   * +label=Issuer URL
+   * +usage=The OIDC issuer URL
+   * +sort=300
+   * +message=Must be a valid HTTPS URL
+   */
+  issuer?: string;
+  /**
+   * +label=Authorization Endpoint
+   * +usage=The public URL of the OpenID Connect authorization endpoint
+   * +sort=400
+   * +message=Must be a valid HTTPS URL
+   */
+  authorization_endpoint?: string;
+  /**
+   * +label=Token Endpoint
+   * +usage=The public URL of the OpenID Connect token endpoint
+   * +sort=500
+   * +message=Must be a valid HTTPS URL
+   */
+  token_endpoint?: string;
+  /**
+   * +label=UserInfo Endpoint
+   * +usage=The public URL of the OpenID Connect userinfo endpoint
+   * +sort=600
+   * +message=Must be a valid HTTPS URL
+   */
+  userinfo_endpoint?: string;
+  /**
+   * +label=Scopes
+   * +usage=Scopes to request from the OpenID Connect provider (space separated, e.g., "openid profile email")
+   * +sort=700
+   * +message=Scopes must not be empty if provided
+   */
+  scopes?: string;
 }
 /**
  * +label=Jfrog Artifacts Registry
@@ -10656,7 +11794,7 @@ export interface JfrogArtifactsRegistry {
   authorized_subjects?: string[];
 }
 /**
- * +label=MCPServer Integration
+ * +label=MCP Server
  * +icon=puzzle-piece
  */
 export interface MCPServerIntegration {
@@ -10666,32 +11804,26 @@ export interface MCPServerIntegration {
   type: "integration/mcp-server/hosted-mcp-server";
   /**
    * +label=Name
-   * +usage=The name of the integration that will be displayed in the TrueFoundry UI.
+   * +usage=The name of the MCP Server.
    * +sort=100
    */
   name: string;
   /**
    * +label=Description
+   * +usage=Provide a brief description of the purpose of this MCP Server.
    * +uiType=TextArea
-   * +usage=The Description of the integration that will be displayed in the TrueFoundry UI.
+   * +message=1 to 1000 characters long, may contain any character except newlines
    * +sort=200
    * +uiProps={"descriptionInline":true}
    */
   description: string;
   /**
    * +label=URL
-   * +usage=The endpoint URL for the MCP server.
+   * +usage=The endpoint URL for the MCP Server. The system will first try a connection using streamable-http transport on this URL. If that fails, it will attempt a connection using SSE transport on <url>/sse.
    * +sort=300
    */
   url: string;
   auth_data?: MCPServerAuth;
-  /**
-   * +label=Access Control
-   * +usage=List of subjects that are authorized to access this integration. List of user fqn in format <user_type>:<username>.
-   * +sort=500
-   * +uiType=AuthorizedSubjects
-   */
-  authorized_subjects?: string[];
 }
 /**
  * +label=Mistral AI Model

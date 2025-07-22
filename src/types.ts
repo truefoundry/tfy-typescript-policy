@@ -1,6 +1,7 @@
 import {
   AsyncService,
   EnvironmentManifest,
+  Helm,
   Job,
   Notebook,
   PolicyEntityTypes,
@@ -125,7 +126,7 @@ export interface ValidationContext {
   };
 }
 
-export type ApplicationManifest = Service | AsyncService | Job | Notebook | SSHServer | Workflow;
+export type ApplicationManifest = Service | AsyncService | Job | Notebook | SSHServer | Workflow | Helm;
 
 export interface MutationInput {
   generatedK8sManifests?: KubernetesObjectWithSpec[];
