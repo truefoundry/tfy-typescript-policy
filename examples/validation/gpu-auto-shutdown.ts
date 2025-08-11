@@ -22,6 +22,16 @@ export function validate(validationInput: ValidationInput): void {
   // if the service does not have a GPU return
   if(!hasGpu) return;
 
+  // skip if autoscaling is enabled
+  if (typeof manifest.replicas != "number"){
+    return
+  }
+
+  // skip if replicas is 0
+  if (manifest.replicas == 0){
+    return
+  }
+
   // if auto shutdown is not enabled throw an error
   if (!manifest.auto_shutdown) {
     throw new ValidationError(
